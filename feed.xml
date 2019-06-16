@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2019-06-17T00:26:43+03:00</updated><id>/feed.xml</id><title type="html">ozkutuk’s blog</title><subtitle></subtitle><entry><title type="html">Ray Marching</title><link href="/graphics/2019/06/14/ray-marching.html" rel="alternate" type="text/html" title="Ray Marching" /><published>2019-06-14T12:00:00+03:00</published><updated>2019-06-14T12:00:00+03:00</updated><id>/graphics/2019/06/14/ray-marching</id><content type="html" xml:base="/graphics/2019/06/14/ray-marching.html">&lt;script type=&quot;text/x-mathjax-config&quot;&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="3.8.5">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2019-06-17T00:36:43+03:00</updated><id>/feed.xml</id><title type="html">ozkutuk’s blog</title><subtitle></subtitle><entry><title type="html">Ray Marching</title><link href="/graphics/2019/06/14/ray-marching.html" rel="alternate" type="text/html" title="Ray Marching" /><published>2019-06-14T12:00:00+03:00</published><updated>2019-06-14T12:00:00+03:00</updated><id>/graphics/2019/06/14/ray-marching</id><content type="html" xml:base="/graphics/2019/06/14/ray-marching.html">&lt;script type=&quot;text/x-mathjax-config&quot;&gt;
   MathJax.Hub.Config({
     jax: [&quot;input/TeX&quot;, &quot;output/HTML-CSS&quot;],
     tex2jax: {
@@ -70,7 +70,7 @@
 &lt;h4 id=&quot;signed-distance-function&quot;&gt;Signed distance function&lt;/h4&gt;
 &lt;p&gt;Signed distance function, despite its cool name, a very simple function. It accepts a point as argument, and returns the shortest distance between that point and some surface. We can use these SDFs to express our surfaces. In fact, we can represent a sphere originating at $(0, 0, 0)$ and $r=1$ with this SDF:&lt;/p&gt;
 
-&lt;script type=&quot;math/tex; mode=display&quot;&gt;f(x,y,z) = \sqrt{x^2 + y^2 + x^2} - 1&lt;/script&gt;
+&lt;script type=&quot;math/tex; mode=display&quot;&gt;f(x,y,z) = \sqrt{x^2 + y^2 + z^2} - 1&lt;/script&gt;
 
 &lt;p&gt;We plug our point to the function, and get our distance to the sphere represented by it. Simple stuff.&lt;/p&gt;
 

@@ -115,7 +115,7 @@
 <h4 id="signed-distance-function">Signed distance function</h4>
 <p>Signed distance function, despite its cool name, a very simple function. It accepts a point as argument, and returns the shortest distance between that point and some surface. We can use these SDFs to express our surfaces. In fact, we can represent a sphere originating at $(0, 0, 0)$ and $r=1$ with this SDF:</p>
 
-<script type="math/tex; mode=display">f(x,y,z) = \sqrt{x^2 + y^2 + x^2} - 1</script>
+<script type="math/tex; mode=display">f(x,y,z) = \sqrt{x^2 + y^2 + z^2} - 1</script>
 
 <p>We plug our point to the function, and get our distance to the sphere represented by it. Simple stuff.</p>
 
