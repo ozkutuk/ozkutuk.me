@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>Ray Marching | ozkutuk’s blog</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="Ray Marching" />
+<meta property="og:locale" content="en_US" />
+<link rel="canonical" href="/graphics/2019/06/14/ray-marching.html" />
+<meta property="og:url" content="/graphics/2019/06/14/ray-marching.html" />
+<meta property="og:site_name" content="ozkutuk’s blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2019-06-14T12:00:00+03:00" />
+<script type="application/ld+json">
+{"@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"/graphics/2019/06/14/ray-marching.html"},"url":"/graphics/2019/06/14/ray-marching.html","headline":"Ray Marching","dateModified":"2019-06-14T12:00:00+03:00","datePublished":"2019-06-14T12:00:00+03:00","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="ozkutuk's blog" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">ozkutuk&#39;s blog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Ray Marching</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2019-06-14T12:00:00+03:00" itemprop="datePublished">Jun 14, 2019
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ["\\(", "\\)"] ],
+      displayMath: [ ['$$', '$$'], ["\\[", "\\]"] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+    //,
+    //displayAlign: "left",
+    //displayIndent: "2em"
+  });
+</script>
+
+<script type="text/javascript" async="" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+<p>Some time ago, I discovered <a href="https://www.shadertoy.com">Shadertoy</a>. For those who don’t know, it is a website where people submit their GL shaders and they can be viewed in the browser, inside the Shadertoy’s environment. There are lots and lots of creative and mind-blowing work there, if you have an interest in graphics, be sure to check it out. Even if you are not interested in the technical side, it can still be an entertaining activity, at least it is for me!</p>
+
+<p>Anyway, if you spend any more than five minutes on Shadertoy, you will see someone mentioning they used ray marching technique to achieve what they did. But what is ray marching? How it is different from ray tracing? Why would one prefer it over ray tracing? To answer these questions, I took a small break from my raytracer and decided to implement a small ray marching engine. Hopefully we will find out the answers along the way. Onwards!</p>
+
+<h3 id="what-is-ray-marching-good-for-anyway">What is ray marching good for anyway?</h3>
+
+<p>While learning a new concept, I always find it helpful to compare with my current way of doing things, and see examples of it being useful. Let’s see some example cases where ray marching is good for.</p>
+
+<h4 id="fractals">Fractals</h4>
+<p>For me, this was the selling point. With traditional ray tracing methods, rendering fractals is either very cumbersome or outright impossible (we will see why in the upcoming sections). I was always fascinated by fractals and even rendered some of the popular 2D ones with Python back in high-school. But rendering 3D fractals? I’m sold!</p>
+
+<p>Here is what we can possibly achieve with the help of ray marching:</p>
+
+<figure style="text-align: center">
+  <div style="text-align: center">
+    <img src="/assets/mandelbulb.jpg" alt="The mandelbulb" width="400" />
+  </div>
+  <figcaption>The mandelbulb. Source: Wikipedia</figcaption>
+</figure>
+
+<h4 id="implicit-surfaces-and-csgs">Implicit surfaces and CSGs</h4>
+<p>We can extend the idea behind fractals, and actually render other implicit surfaces. These may include some of our common object types like spheres or boxes and some other surfaces which we have not rendered before (torus is one example). We can also combine our surfaces to create new surfaces, which is called <em>Constructive solid geometry</em>, or CSG for short. This way we can express some surfaces with much ease, compared to the explicit alternatives.</p>
+
+<h4 id="real-time-rendering-and-parallelism">Real-time rendering and parallelism</h4>
+<p>I have not implemented this myself, so take my word with grain of salt. However, as far as my knowledge goes, ray marching is also a suitable strategy for parallel renderer implementations. The ray marching algorithm is generally involved with only local information at each step. This means less divergence between parallel tasks and in turn more opportunity to parallelize.</p>
+
+<p>Now that we see why ray marching is useful, let’s have a look in what ways it is different than ray tracing.</p>
+
+<h3 id="back-to-basics-surfaces">Back to basics: surfaces</h3>
+<p>In order to understand how ray marching works, let’s go over what we have been doing with ray tracing up until now. First of all, we need a scene to render, right? In this scene description, we describe lights, camera, materials, and most importantly object data. This object data includes vertex positions and in the case of other specific objects it may include additional data (like radius for sphere). This is defining surface geometry <em>explicitly</em>. This means that we can solve the intersection formula directly for the $t$ value. An example would be the ray-sphere intersection formula:</p>
+
+<script type="math/tex; mode=display">(p - c)\cdot(p - c) - R^2 = 0</script>
+
+<p>Solving the equation for the $t$ parameter yields:</p>
+
+<script type="math/tex; mode=display">t = \frac{-d\cdot (o-c) \pm \sqrt{(d\cdot (o-c))^2 - (d \cdot d)((o-c)\cdot (o-c) - R^2)}}{d\cdot d}</script>
+
+<p>And it has been serving our needs until this point. But sometimes the surface function is very hard (or impossible) to solve. This is where implicit surfaces come to play. In contrast with explicit surfaces, we do not solve the formula directly. But we try out values on the formula and get a response regarding if we intersect or not.</p>
+
+<h3 id="how-ray-marching-works">How ray marching works</h3>
+<p>We can summarize the ray marching in two steps:</p>
+<ol>
+  <li>We march forward the ray direction in increments</li>
+  <li>Check if the distance to the surface is in an acceptable range</li>
+</ol>
+
+<p>The thing about first step is, determining the step size is a bit problematic. If the step size is too big, we may possibly miss an intersection. If it is too small, well, it would work <em>in theory</em>, however it would to too computationally costly to actually use. There is a solution to this: we don’t need to use fixed step sizes. Sphere tracing method is based on this idea, so let’s explore it further.</p>
+
+<h4 id="sphere-tracing">Sphere tracing</h4>
+<p>Sphere tracing is a way to speed up the ray marching algorithm. Our fear was to take too big of a step to miss an intersection. Then we will take <em>the biggest step such that we don’t miss an intersection</em>. But how? Well, if we knew our distance to the closest thing in the scene from our current position, we could take a step that big and there wouldn’t be any missed intersection. Hopefully, we represent our scene with exactly that: signed distance functions!</p>
+
+<h4 id="signed-distance-function">Signed distance function</h4>
+<p>Signed distance function, despite its cool name, a very simple function. It accepts a point as argument, and returns the shortest distance between that point and some surface. We can use these SDFs to express our surfaces. In fact, we can represent a sphere originating at $(0, 0, 0)$ and $r=1$ with this SDF:</p>
+
+<script type="math/tex; mode=display">f(x,y,z) = \sqrt{x^2 + y^2 + x^2} - 1</script>
+
+<p>We plug our point to the function, and get our distance to the sphere represented by it. Simple stuff.</p>
+
+<p>We haven’t talked about the second step of ray marching yet, but there is not much to it. We apply the SDF and check the result. There is a reason it is <em>signed</em> distance function, the sign tells us if the point is inside or outside the surface. And we use that information to check if there is an intersection! If $f(point) &lt; 0$, the point is inside the surface, hence intersection. We need a bit of a caution here. Remember sphere tracing? We take a step as big as our distance to the scene. But that way, we can never reach inside the surface! Therefore we define a small $\epsilon$ value such that we call it an intersection when $f(point) &lt; \epsilon$.</p>
+
+<p>Enough theory, let’s see some action!</p>
+
+<h3 id="implementation">Implementation</h3>
+
+<p>I almost explained all the theory, so I am about to leave you with some images. Below you will see a render of a pretty common tetrahedron fractal and examples of basic CSG operations.</p>
+
+<figure style="text-align: center">
+  <div style="text-align: center">
+    <img src="/assets/tetrahedron.png" alt="Tetrahedron" width="400" />
+  </div>
+  <figcaption>Tetrahedron fractal</figcaption>
+</figure>
+
+<figure style="text-align: center">
+  <div style="text-align: center">
+    <img src="/assets/spheres_union.png" alt="union" width="400" />
+  </div>
+  <figcaption>Union of two spheres</figcaption>
+</figure>
+<figure style="text-align: center">
+  <div style="text-align: center">
+    <img src="/assets/spheres_intersection.png" alt="intersection" width="400" />
+  </div>
+  <figcaption>Intersection of two spheres</figcaption>
+</figure>
+<figure style="text-align: center">
+  <div style="text-align: center">
+    <img src="/assets/spheres_diff.png" alt="difference" width="400" />
+  </div>
+  <figcaption>Difference of two spheres</figcaption>
+</figure>
+
+<p>There are some extra stuff regarding the shading and CSGs, but I think there are much better resources to learn them from. If you want to explore them further, you can refer to <a href="http://jamie-wong.com/2016/07/15/ray-marching-signed-distance-functions/">Jamie Wong’s awesome blog post</a>. Ray marching is a vastly deep topic and there is much to learn. What I did was merely a proof-of-concept, but it was just a little side-project for me. Next time, we will continue on with our raytracer to implement some matrix operations and hopefully instancing. Until then, happy coding!</p>
+
+
+  </div><a class="u-url" href="/graphics/2019/06/14/ray-marching.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">ozkutuk&#39;s blog</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">ozkutuk&#39;s blog</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/ozkutuk"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">ozkutuk</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p></p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
