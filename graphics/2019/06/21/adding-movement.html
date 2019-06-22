@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1"><!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>Raiden, Part III: Adding Movement | ozkutuk’s blog</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="Raiden, Part III: Adding Movement" />
+<meta property="og:locale" content="en_US" />
+<link rel="canonical" href="/graphics/2019/06/21/adding-movement.html" />
+<meta property="og:url" content="/graphics/2019/06/21/adding-movement.html" />
+<meta property="og:site_name" content="ozkutuk’s blog" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2019-06-21T12:00:00+03:00" />
+<script type="application/ld+json">
+{"@type":"BlogPosting","mainEntityOfPage":{"@type":"WebPage","@id":"/graphics/2019/06/21/adding-movement.html"},"url":"/graphics/2019/06/21/adding-movement.html","headline":"Raiden, Part III: Adding Movement","dateModified":"2019-06-21T12:00:00+03:00","datePublished":"2019-06-21T12:00:00+03:00","@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+<link rel="stylesheet" href="/assets/main.css"><link type="application/atom+xml" rel="alternate" href="/feed.xml" title="ozkutuk's blog" /></head>
+<body><header class="site-header" role="banner">
+
+  <div class="wrapper"><a class="site-title" rel="author" href="/">ozkutuk&#39;s blog</a><nav class="site-nav">
+        <input type="checkbox" id="nav-trigger" class="nav-trigger" />
+        <label for="nav-trigger">
+          <span class="menu-icon">
+            <svg viewBox="0 0 18 15" width="18px" height="15px">
+              <path d="M18,1.484c0,0.82-0.665,1.484-1.484,1.484H1.484C0.665,2.969,0,2.304,0,1.484l0,0C0,0.665,0.665,0,1.484,0 h15.032C17.335,0,18,0.665,18,1.484L18,1.484z M18,7.516C18,8.335,17.335,9,16.516,9H1.484C0.665,9,0,8.335,0,7.516l0,0 c0-0.82,0.665-1.484,1.484-1.484h15.032C17.335,6.031,18,6.696,18,7.516L18,7.516z M18,13.516C18,14.335,17.335,15,16.516,15H1.484 C0.665,15,0,14.335,0,13.516l0,0c0-0.82,0.665-1.483,1.484-1.483h15.032C17.335,12.031,18,12.695,18,13.516L18,13.516z"/>
+            </svg>
+          </span>
+        </label>
+
+        <div class="trigger"><a class="page-link" href="/about/">About</a></div>
+      </nav></div>
+</header>
+<main class="page-content" aria-label="Content">
+      <div class="wrapper">
+        <article class="post h-entry" itemscope itemtype="http://schema.org/BlogPosting">
+
+  <header class="post-header">
+    <h1 class="post-title p-name" itemprop="name headline">Raiden, Part III: Adding Movement</h1>
+    <p class="post-meta">
+      <time class="dt-published" datetime="2019-06-21T12:00:00+03:00" itemprop="datePublished">Jun 21, 2019
+      </time></p>
+  </header>
+
+  <div class="post-content e-content" itemprop="articleBody">
+    <script type="text/x-mathjax-config">
+  MathJax.Hub.Config({
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+      inlineMath: [ ['$', '$'], ["\\(", "\\)"] ],
+      displayMath: [ ['$$', '$$'], ["\\[", "\\]"] ],
+      processEscapes: true,
+      skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+    }
+    //,
+    //displayAlign: "left",
+    //displayIndent: "2em"
+  });
+</script>
+
+<script type="text/javascript" async="" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML">
+</script>
+
+<p>After a slight detour from our raytracer to research a bit about ray marching, we are back again. This time we will be adding transformations and instancing to Raiden. We will talk in a lot more detail in their dedicated chapters, but just to give a brief idea of what we are about to do for those who are unfamiliar with the terminology:</p>
+
+<p>Transformations are pretty self-explanatory. We will be applying certain operations to our objects to “transform” them. We will cover translation, scaling and rotation. It is important to note that we will be doing these in such a way that we will <em>not</em> be modifying the object geometry. We will be achieving the transformations with the help of our good ol’ matrices. The benefits of not manipulating the object geometry directly  may not be too obvious for now, but it will be useful once we start implementing instancing.</p>
+
+<p>Instancing is method to save additional memory cost in the case where there exists duplicates of a single complex mesh in the scene. We call these duplicates, well… instances. I think it is safe to say that instancing is a space optimization. We will see how it works in its own section, but I think this explanation is enough for now to get going.</p>
+
+<h3 id="transformations">Transformations</h3>
+<p>If you were following closely, I mentioned that we will be making use of matrices to perform our transformations. But we don’t have any matrix implementation in our project yet. After thinking for a while, I thought implementing a reliable math library with full matrix and vector support was too much work and decided to integrate <a href="https://glm.g-truc.net/0.9.9/index.html">GLM</a> into the project. GLM provides all the math stuff with a very similar interface to GLSL. Since it is designed with use in graphics work in mind, it has the common functionality we will need. With the integration of GLM, it was the time to say goodbye to <code class="highlighter-rouge">tinymath</code>. It was a small library we rolled on our own but served us well until this time. Actually, I had used GLM in my other side graphics projects which involved OpenGL stuff. I was familiar with its architecture and it was a pleasant experience to use, therefore I designed <code class="highlighter-rouge">tinymath</code> with an interface very similar to GLM. This resulted in a very smooth migration phase, which was mostly converting <code class="highlighter-rouge">tmath::vec3f</code> to <code class="highlighter-rouge">glm::vec3</code> and it was good to go.</p>
+
+<p>Now that we have our math library at our disposal, we can start to actually implement the transformation stuff. We hopefully need not worry about matrix calculations, GLM takes care of it with its convenient functions. There are only a few points we need to be careful about.</p>
+
+<p>Let’s discuss how this all comes together. I mentioned that we will not be modifying the object geometry, so what are we going to do? We can represent all our transformations, that is rotation, scaling and translation, with a matrix. We call this matrix a transformation matrix. I will not go into too much detail regarding the math part, but we know that by the properties of matrices and a few clever tricks, we can combine these different kinds of transformations by multiplying their corresponding matrices, resulting in a single transformation matrix.</p>
+
+<p>The actual question is: how do we use this matrix? I think it is obvious that we can simply modify our objects’ <code class="highlighter-rouge">hit</code> routines to apply this transformation. Let’s consider meshes: we could multiply our transformation matrix with all the vertices of our mesh, inside the <code class="highlighter-rouge">hit</code> function. And it <em>would</em> work. But we can do better. Let’s think for a second. Rather than transforming our objects, we can <em>inverse</em> transform the ray, and their relative positions and orientations will be the same. The upside is it would be a lot, <em>a lot</em> faster.</p>
+
+<p>One thing we need to be careful about is the case of non-uniform scaling. We can scale our objects in a non-uniform fashion. For example, we can scale a sphere 2x its size, but only on x-axis. This would yield an ellipsoid. We do not have a <code class="highlighter-rouge">hit</code> routine for ellipsoids, but the god part is we don’t need it. We can use our usual sphere hit function, and transform the result. However, in order to get a correct result, we need to treat the surface normal vector differently. We basically need to multiply it with the inverse transpose of the transformation matrix, and it just works™.</p>
+
+<p>The actual part we need to think thoroughly, is about BVH. If we do not transform the bounding boxes of our objects along with them, we are no good. I know that it is a bit hard to visualize, I know it is for me. But bear with me. While we are constructing the BVH, we are in the <em>world space</em>. Therefore we need to create the bounding boxes of the BVH as if we transformed our objects. However, once we hit a bounding box of the BVH, we move the <em>local space</em> of our object, therefore we don’t transform an objects internal bounding box, we just inverse transform the ray. I hope that makes sense. It took me a lot of thinking to grasp the idea, and I am still not totally sure I got it right 😄.</p>
+
+<p>After we implement the corresponding parser stuff for our transformations, and put all these together, we can have the following outputs:</p>
+
+<figure style="text-align: center">
+  <div style="text-align: center">
+    <img src="/assets/bunny_rotated.png" alt="Bunny rotated" width="400" />
+  </div>
+  <figcaption>Bunny, rotated on $y$-axis</figcaption>
+</figure>
+
+<p>I rendered a few of the above with differing rotation angles to produce this animation:</p>
+
+<figure style="text-align: center">
+  <div style="text-align: center">
+    <img src="/assets/bun.gif" alt="Bunny animation" width="400" />
+  </div>
+</figure>
+
+<p>I also rendered this scene of the so-called “killeroo”, however there seems to be problem with refractive surfaces under transformation. I have yet to solve the issue. However transformations are correct:</p>
+
+<figure style="text-align: center">
+  <div style="text-align: center">
+    <img src="/assets/killeroo_glass.png" alt="Killeroo" width="400" />
+  </div>
+  <figcaption>Killeroo</figcaption>
+</figure>
+
+<h4 id="instancing">Instancing</h4>
+
+<p>In the intro paragraph I have talked a bit about what instancing is. As I said, instancing is a way to save memory for the cases where there exists multiples of the same mesh. What I mean by the same mesh is, only the same geometry. The instances will most probably have a different position, orientation and it may have different materials. These are all okay. After all, the costly part for us is the object geometry, memory-wise.</p>
+
+<p>The idea is simple and intuitive. For our instances, we do not create a whole new mesh in the memory. Instead we define a <code class="highlighter-rouge">MeshInstance</code> class, which holds a pointer to the base mesh, and also has its own transformation matrix and material. In the <code class="highlighter-rouge">hit</code> function of our <code class="highlighter-rouge">MeshInstance</code>, we just call the <code class="highlighter-rouge">hit</code> function of the base mesh. During this process, we apply the transformation of the instance ofcourse. The same principles apply as explained in previous section. Another thing we may or may not want to have is to apply the transformation on top of the base mesh’s own transformation matrix, or just have it applied without the base one. This is specified in the input scene files as a <code class="highlighter-rouge">resetTransform</code> field. Depending on its value, we combine the two matrices.</p>
+
+<p>This is all, really. To be honest I expected instancing would be a lot more work to implement. However, it was pretty easy compared to the transformation part. If you nail down the transformations and all the bounding box calculations together with it, implementing instancing will be a breeze.</p>
+
+<p>I don’t have many scenes to show instancing. I constructed this one, where our bunny has a companion from now on:</p>
+
+<figure style="text-align: center">
+  <div style="text-align: center">
+    <img src="/assets/bunny_mult.png" alt="Bunny companions" width="400" />
+  </div>
+  <figcaption>Bunnies</figcaption>
+</figure>
+
+<p>The original bunny was first translated right, and scaled down. Then the instance of it was translated left and rotated around $y$-axis. The original transform matrix was also applied to the instance (hence it is also scaled down).</p>
+
+<p>This is it for this blog post. I hope it was informative. These topics are hard to grasp without a visual resource, it is hard to explain via text as well. The sad thing is I could not find a resource with an interactive demo or an animated video. If you happen to find one, I would like to take a look at it as well! As always, thanks for reading, and I wish you a great summer!</p>
+
+
+  </div><a class="u-url" href="/graphics/2019/06/21/adding-movement.html" hidden></a>
+</article>
+
+      </div>
+    </main><footer class="site-footer h-card">
+  <data class="u-url" href="/"></data>
+
+  <div class="wrapper">
+
+    <h2 class="footer-heading">ozkutuk&#39;s blog</h2>
+
+    <div class="footer-col-wrapper">
+      <div class="footer-col footer-col-1">
+        <ul class="contact-list">
+          <li class="p-name">ozkutuk&#39;s blog</li></ul>
+      </div>
+
+      <div class="footer-col footer-col-2"><ul class="social-media-list"><li><a href="https://github.com/ozkutuk"><svg class="svg-icon"><use xlink:href="/assets/minima-social-icons.svg#github"></use></svg> <span class="username">ozkutuk</span></a></li></ul>
+</div>
+
+      <div class="footer-col footer-col-3">
+        <p></p>
+      </div>
+    </div>
+
+  </div>
+
+</footer>
+</body>
+
+</html>
