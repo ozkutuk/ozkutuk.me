@@ -2,9 +2,17 @@
 {-# LANGUAGE OverloadedStrings #-}
 import           Data.Monoid (mappend)
 import           Hakyll
+import           Text.Pandoc.Options (HTMLMathMethod (..)
+                                     , WriterOptions (..)
+                                     )
 
 
 --------------------------------------------------------------------------------
+
+writerWithMath :: WriterOptions
+writerWithMath =
+  defaultHakyllWriterOptions { writerHTMLMathMethod = MathJax "" }
+
 main :: IO ()
 main = hakyll $ do
     match "assets/*" $ do
@@ -23,7 +31,7 @@ main = hakyll $ do
 
     match "posts/*" $ do
         route $ setExtension "html"
-        compile $ pandocCompiler
+        compile $ pandocCompilerWith defaultHakyllReaderOptions writerWithMath
             >>= loadAndApplyTemplate "templates/post.html"    postCtx
             >>= loadAndApplyTemplate "templates/default.html" postCtx
             >>= relativizeUrls

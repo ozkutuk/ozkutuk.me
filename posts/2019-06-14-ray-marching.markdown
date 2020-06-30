@@ -4,8 +4,6 @@ title:  "Ray Marching"
 date:   2019-06-14 12:00:00 +0300
 categories: graphics
 ---
-{% include math.html %}
-
 Some time ago, I discovered [Shadertoy][shadertoy]. For those who don't know, it is a website where people submit their GL shaders and they can be viewed in the browser, inside the Shadertoy's environment. There are lots and lots of creative and mind-blowing work there, if you have an interest in graphics, be sure to check it out. Even if you are not interested in the technical side, it can still be an entertaining activity, at least it is for me!
 
 Anyway, if you spend any more than five minutes on Shadertoy, you will see someone mentioning they used ray marching technique to achieve what they did. But what is ray marching? How it is different from ray tracing? Why would one prefer it over ray tracing? To answer these questions, I took a small break from my raytracer and decided to implement a small ray marching engine. Hopefully we will find out the answers along the way. Onwards!

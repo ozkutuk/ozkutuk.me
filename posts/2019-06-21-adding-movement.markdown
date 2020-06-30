@@ -4,8 +4,6 @@ title:  "Raiden, Part III: Adding Movement"
 date:   2019-06-21 12:00:00 +0300
 categories: graphics
 ---
-{% include math.html %}
-
 After a slight detour from our raytracer to research a bit about ray marching, we are back again. This time we will be adding transformations and instancing to Raiden. We will talk in a lot more detail in their dedicated chapters, but just to give a brief idea of what we are about to do for those who are unfamiliar with the terminology:
 
 Transformations are pretty self-explanatory. We will be applying certain operations to our objects to "transform" them. We will cover translation, scaling and rotation. It is important to note that we will be doing these in such a way that we will _not_ be modifying the object geometry. We will be achieving the transformations with the help of our good ol' matrices. The benefits of not manipulating the object geometry directly  may not be too obvious for now, but it will be useful once we start implementing instancing.

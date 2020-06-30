@@ -4,8 +4,6 @@ title:  "Raiden, Part II: Going Deeper"
 date:   2019-04-08 12:00:00 +0300
 categories: graphics
 ---
-{% include math.html %}
-
 It has been a month since the announcement of my new ray tracer, Raiden. Hopefully, the delay is for a good reason. We have lots of new features to talk about! We will continue from where we left off, addition of refractive surfaces. After we take care of that, we want to improve the render quality. We will achieve this by adding some effects which makes of multisampling.These include anti-aliasing, depth of field, soft shadows and glossy reflections. However, multisampling incurs a good deal of extra runtime cost. Therefore, we first need to speed up the rendering process by using an acceleration structure. There is a lot to cover, so let's get right in!
 
 ### Refractive Surfaces
