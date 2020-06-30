@@ -27,29 +27,15 @@ The actual part we need to think thoroughly, is about BVH. If we do not transfor
 
 After we implement the corresponding parser stuff for our transformations, and put all these together, we can have the following outputs:
 
-<figure style="text-align: center">
-  <div style="text-align: center">
-    <img src="/assets/bunny_rotated.png" alt="Bunny rotated" width="400">
-  </div>
-  <figcaption>Bunny, rotated on $y$-axis</figcaption>
-</figure>
+![Bunny, rotated on $y$-axis](/assets/bunny_rotated.png)
 
 I rendered a few of the above with differing rotation angles to produce this animation:
 
-<figure style="text-align: center">
-  <div style="text-align: center">
-    <img src="/assets/bun.gif" alt="Bunny animation" width="400">
-  </div>
-</figure>
+![Bunny, animated](/assets/bun.gif)
 
 I also rendered this scene of the so-called "killeroo", however there seems to be problem with refractive surfaces under transformation. I have yet to solve the issue. However transformations are correct:
 
-<figure style="text-align: center">
-  <div style="text-align: center">
-    <img src="/assets/killeroo_glass.png" alt="Killeroo" width="400">
-  </div>
-  <figcaption>Killeroo</figcaption>
-</figure>
+![Killeroo](/assets/killeroo_glass.png)
 
 #### Instancing
 
@@ -62,12 +48,7 @@ This is all, really. To be honest I expected instancing would be a lot more work
 I don't have many scenes to show instancing. I constructed this one, where our bunny has a companion from now on:
 
 
-<figure style="text-align: center">
-  <div style="text-align: center">
-    <img src="/assets/bunny_mult.png" alt="Bunny companions" width="400">
-  </div>
-  <figcaption>Bunnies</figcaption>
-</figure>
+![Bunnies](/assets/bunny_mult.png)
 
 The original bunny was first translated right, and scaled down. Then the instance of it was translated left and rotated around $y$-axis. The original transform matrix was also applied to the instance (hence it is also scaled down).
 

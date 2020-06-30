@@ -62,6 +62,7 @@ This is the current state of Raiden. Here are a few fresh renders:
 
 ### What's Next?
 The first planned feature is the addition of refractive surfaces, such as glass-like objects. Some other work to be done in the near future are:
+
 - Acceleration structures, more specifically BVH
 - Parsing .ply objects
 - Multisampling

@@ -54,3 +54,21 @@ div.info {
     font-size: 14px;
     font-style: italic;
 }
+
+img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: auto;
+}
+
+figure {
+    text-align: center;
+    display: table;
+    max-width: 60%; /* demo; set some amount (px or %) if you can */
+    margin: 10px auto; /* not needed unless you want centered */
+}
+
+figcaption {
+    margin: 8px auto;
+}

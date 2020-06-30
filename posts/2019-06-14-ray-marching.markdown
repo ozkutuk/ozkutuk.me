@@ -19,12 +19,7 @@ For me, this was the selling point. With traditional ray tracing methods, render
 
 Here is what we can possibly achieve with the help of ray marching:
 
-<figure style="text-align: center">
-  <div style="text-align: center">
-    <img src="/assets/mandelbulb.jpg" alt="The mandelbulb" width="400">
-  </div>
-  <figcaption>The mandelbulb. Source: Wikipedia</figcaption>
-</figure>
+![The mandelbulb. Source: Wikipedia](/assets/mandelbulb.jpg)
 
 #### Implicit surfaces and CSGs
 We can extend the idea behind fractals, and actually render other implicit surfaces. These may include some of our common object types like spheres or boxes and some other surfaces which we have not rendered before (torus is one example). We can also combine our surfaces to create new surfaces, which is called *Constructive solid geometry*, or CSG for short. This way we can express some surfaces with much ease, compared to the explicit alternatives.
@@ -76,32 +71,13 @@ Enough theory, let's see some action!
 
 I almost explained all the theory, so I am about to leave you with some images. Below you will see a render of a pretty common tetrahedron fractal and examples of basic CSG operations.
 
-<figure style="text-align: center">
-  <div style="text-align: center">
-    <img src="/assets/tetrahedron.png" alt="Tetrahedron" width="400">
-  </div>
-  <figcaption>Tetrahedron fractal</figcaption>
-</figure>
+![Tetrahedron fractal](/assets/tetrahedron.png)
 
+![Union of two spheres](/assets/spheres_union.png)
 
-<figure style="text-align: center">
-  <div style="text-align: center">
-    <img src="/assets/spheres_union.png" alt="union" width="400">
-  </div>
-  <figcaption>Union of two spheres</figcaption>
-</figure>
-<figure style="text-align: center">
-  <div style="text-align: center">
-    <img src="/assets/spheres_intersection.png" alt="intersection" width="400">
-  </div>
-  <figcaption>Intersection of two spheres</figcaption>
-</figure>
-<figure style="text-align: center">
-  <div style="text-align: center">
-    <img src="/assets/spheres_diff.png" alt="difference" width="400">
-  </div>
-  <figcaption>Difference of two spheres</figcaption>
-</figure>
+![Intersection of two spheres](/assets/spheres_intersection.png)
+
+![Difference of two spheres](/assets/spheres_diff.png)
 
 There are some extra stuff regarding the shading and CSGs, but I think there are much better resources to learn them from. If you want to explore them further, you can refer to [Jamie Wong's awesome blog post][jamiewong]. Ray marching is a vastly deep topic and there is much to learn. What I did was merely a proof-of-concept, but it was just a little side-project for me. Next time, we will continue on with our raytracer to implement some matrix operations and hopefully instancing. Until then, happy coding!
 
