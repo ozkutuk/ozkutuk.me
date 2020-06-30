@@ -1,31 +1,30 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>ozkutuk's blog - Raiden, Part II: Going Deeper</title>
-        <link rel="stylesheet" type="text/css" href="../css/default.css" />
-    </head>
-    <body>
-        <div id="header">
-            <div id="logo">
-                <a href="../">ozkutuk's blog</a>
-            </div>
-            <div id="navigation">
-                <a href="../about.html">About</a>
-                <a href="../archive.html">Archive</a>
-            </div>
-        </div>
+<!DOCTYPE html>
+<html lang="en">
 
-        <div id="content">
-            <h1>Raiden, Part II: Going Deeper</h1>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>ozkutuk's blog - Raiden, Part II: Going Deeper</title>
 
+    <link rel="stylesheet" type="text/css" href="../css/default.css" />
+</head>
+
+<body>
+    <div id="page-content">
+        <header>
+            <nav>
+                <div id="logo">
+                    <a href="../">ozkutuk's blog</a>
+                </div>
+            </nav>
+        </header>
+
+        <section role="main">
             <div class="info">
     Posted on April  8, 2019
     
 </div>
 
-<p>{% include math.html %}</p>
 <p>It has been a month since the announcement of my new ray tracer, Raiden. Hopefully, the delay is for a good reason. We have lots of new features to talk about! We will continue from where we left off, addition of refractive surfaces. After we take care of that, we want to improve the render quality. We will achieve this by adding some effects which makes of multisampling.These include anti-aliasing, depth of field, soft shadows and glossy reflections. However, multisampling incurs a good deal of extra runtime cost. Therefore, we first need to speed up the rendering process by using an acceleration structure. There is a lot to cover, so let’s get right in!</p>
 <h3 id="refractive-surfaces">Refractive Surfaces</h3>
 <p>Let’s pickup where we left off, and start with refractive surfaces. This will allow us to render transparent objects, like glass. To be honest, implementing refraction is not that much different than reflection, but there are a few places where things could go wrong. I roughly divided the work into three parts. I then worked through these in the following order:</p>
@@ -38,7 +37,7 @@
 <h4 id="refraction">Refraction</h4>
 <p>Quoting from Wikipedia: &gt; In physics refraction is the change in direction of a wave passing from one medium to another or from a gradual change in the medium.</p>
 <p>Hmm, right. So as with reflection, it is a change in direction of our rays. But how do we calculate it? Simple. We use <a href="https://en.wikipedia.org/wiki/Snell%27s_law">Snell’s law</a>. You can follow the Wikipedia link to see the derivation of the formula, but basically it states that sine of refracted ray’s angle with respect to normal divided by sine of incoming ray’s angle is equal to the ratio of two mediums’ refractive indices.</p>
-<p><br /><span class="math display">$$\frac{\sin{\theta_2}}{\sin{\theta_1}} = \frac{n_1}{n_2}$$</span><br /></p>
+<p><span class="math display">\[\frac{\sin{\theta_2}}{\sin{\theta_1}} = \frac{n_1}{n_2}\]</span></p>
 <p>Cool, time to test this out. Since we don’t calculate the reflection/refraction ratio yet, let’s assume we have 100% refraction for now. We will test this with the <code>cornellbox_glass</code> scene, which is basically <code>cornellbox</code> with a glass sphere. This is the result:</p>
 <figure>
 <img src="../assets/only_refraction.png" alt /><figcaption>only_refraction</figcaption>
@@ -46,19 +45,19 @@
 <p>Even with only refraction, the sphere resembles glass. It looks a bit odd, because it does not have reflection, so that is what we will fix next.</p>
 <h4 id="fresnel-computation">Fresnel computation</h4>
 <p>Fresnel equations describe the ratio of reflection vs. refraction, just what we need. There is a problem though, computing them in an exact manner involves solving some differential equations, which makes them costly and complicated. Hopefully, there exists an approximation method which is quite accurate for our purposes and is used widely in computer graphics. It is called <a href="https://en.wikipedia.org/wiki/Schlick%27s_approximation">Schlick’s approximation</a>:</p>
-<p><br /><span class="math display">$$
+<p><span class="math display">\[
 \begin{align*}
     R_0 &amp;= (\frac{n_1 - n_2}{n_1 + n_2})^2 \\
     R &amp;= R_0 + (1 - R_0)(1 - \cos\theta)^5 \\
 \end{align*}
-$$</span><br /></p>
-<p>The calculated <br /><span class="math display"><em>R</em></span><br /> value is between 0 and 1, and corresponds to the <em>reflection</em> amount compared to refraction. So sum of reflection and refraction factors is always 1. Using this simple computation, we get the following result:</p>
+\]</span></p>
+<p>The calculated <span class="math display">\[R\]</span> value is between 0 and 1, and corresponds to the <em>reflection</em> amount compared to refraction. So sum of reflection and refraction factors is always 1. Using this simple computation, we get the following result:</p>
 <figure>
 <img src="../assets/without_attenuation.png" alt /><figcaption>without_attenuation</figcaption>
 </figure>
 <p>The difference is astonishing. It really looks like glass now. Just to be bit more physically correct, there is one final step we have to take.</p>
 <h4 id="attenuation">Attenuation</h4>
-<p>While light is travelling through a medium, its flux gradually loses intensity. Let’s implement that now. We will use <a href="https://en.wikipedia.org/wiki/Beer%E2%80%93Lambert_law">Beer’s law</a> here. To be honest, I don’t remember enough physics and calculus to understand the derivation of the formula, but in our case it reduces to <br /><span class="math display"><em>a</em><sup><em>x</em></sup></span><br /> where <br /><span class="math display"><em>a</em></span><br /> is the <em>attenuation coefficient</em> and <br /><span class="math display"><em>x</em></span><br /> is the distance to the point where the ray leaves the current medium. With just a few more lines of code:</p>
+<p>While light is travelling through a medium, its flux gradually loses intensity. Let’s implement that now. We will use <a href="https://en.wikipedia.org/wiki/Beer%E2%80%93Lambert_law">Beer’s law</a> here. To be honest, I don’t remember enough physics and calculus to understand the derivation of the formula, but in our case it reduces to <span class="math display">\[a^x\]</span> where <span class="math display">\[a\]</span> is the <em>attenuation coefficient</em> and <span class="math display">\[x\]</span> is the distance to the point where the ray leaves the current medium. With just a few more lines of code:</p>
 <figure>
 <img src="../assets/full_glass.png" alt /><figcaption>full_glass</figcaption>
 </figure>
@@ -142,13 +141,13 @@ $$</span><br /></p>
 <p>Higher the samples, better the quality; but also more time to render. You may not notice much of a difference in quality between 9 and 100 samples, and you are right. However, higher number of samples are often necessary to create effects other than anti-aliasing. We will implement a few of them now.</p>
 <h4 id="depth-of-field">Depth of Field</h4>
 <p>I am pretty sure you are familiar with the depth of field phenomena, where objects out of focus look blurred. What is being “out of focus” anyway? It occurs due to the nature of lenses our cameras have in real life. Every lens has a focal distance associated with it. It is the distance where objects that far will look sharply. To simulate this effect, we need to modify our camera a bit. Rather than having a point camera, we will have lens with pre-determined aperture size and focal distance values. However we can cheat a little bit. We already know the focal distance, therefore we can just send our rays directed to the focal point. This saves us from the computations in which the rays refracted by lens do not reach the eye anymore.</p>
-<p>I mentioned focal point in the previous paragraph. How do we find it? Simple. The ray that goes through the center of lens does not bend, therefore we can use it to calculate our focal point. We just shoot a ray through the center and find the point on that ray where <br /><span class="math display"><em>t</em> = <em>f</em><em>o</em><em>c</em><em>a</em><em>l</em>_<em>d</em><em>i</em><em>s</em><em>t</em><em>a</em><em>n</em><em>c</em><em>e</em></span><br />. When we find the focal point, we sample points on our pixel and shoot rays originating from those points directed at the focal point. Finally, as in the multi-sampling section, we average the color values from those rays.</p>
+<p>I mentioned focal point in the previous paragraph. How do we find it? Simple. The ray that goes through the center of lens does not bend, therefore we can use it to calculate our focal point. We just shoot a ray through the center and find the point on that ray where <span class="math display">\[t = focal\_distance\]</span>. When we find the focal point, we sample points on our pixel and shoot rays originating from those points directed at the focal point. Finally, as in the multi-sampling section, we average the color values from those rays.</p>
 <p>Here we have a new scene to test this with. The sphere second from right is in focus. As you see, the others are blurred properly:</p>
 <figure>
 <img src="../assets/spheres_dof.png" alt /><figcaption>spheres dof</figcaption>
 </figure>
 <h4 id="glossy-reflections">Glossy Reflections</h4>
-<p>With glossy reflections, we can render imperfect mirrors, like brushed metals. The idea is similar to depth of field, but now applied to reflections. We create the imperfection by redirecting the reflected ray by a small margin. To determine how much to offset we apply, we again sample a random point within a boundary, given within material properties as “roughness”. We only need to find a way to sample this point about the tip of reflected ray. Fortunately, there is a neat way to do this with a bit of linear algebra. We create a new orthonormal basis where the tip of the ray is origin and the direction of the ray is our new <br /><span class="math display"> + <em>y</em></span><br /> axis. We then sample our point in this basis as usual. Finally we transform the point to world coordinates.</p>
+<p>With glossy reflections, we can render imperfect mirrors, like brushed metals. The idea is similar to depth of field, but now applied to reflections. We create the imperfection by redirecting the reflected ray by a small margin. To determine how much to offset we apply, we again sample a random point within a boundary, given within material properties as “roughness”. We only need to find a way to sample this point about the tip of reflected ray. Fortunately, there is a neat way to do this with a bit of linear algebra. We create a new orthonormal basis where the tip of the ray is origin and the direction of the ray is our new <span class="math display">\[+y\]</span> axis. We then sample our point in this basis as usual. Finally we transform the point to world coordinates.</p>
 <p>Below you will see a render of cornellbox scene, but with imperfect reflections: <img src="../assets/imperfect.png" alt="imperfect" /></p>
 <h4 id="soft-shadows">Soft Shadows</h4>
 <p>If you noticed, our shadows are always hard shadows. The reason behind this is that we only had point lights as light sources, therefore each point is either seeing light or it does not. This “binary” situation makes surfaces either fully in shadow (completely dark) or fully bright. As you might have guessed, if we want to add soft shadows to our renderer, we need to implement area lights.</p>
@@ -163,10 +162,15 @@ $$</span><br /></p>
 <p>That was a lot of stuff to digest, so if you are still reading, congratulations. I believe the most important part was the BVH implementation, since we will start to render more and more complex scenes. With the addition of multi-sampling techniques, we got really cool outputs. However, we are still far from photorealistic results.</p>
 <p>Some planned features are still missing (i.e. .ply models), but I did not want to delay the blog post any longer. It will certainly be a part of the following post. We will also implement instancing and transformations. Thanks for reading, and keep following for the updates. I promise you won’t be waiting for a month this time!</p>
 
-        </div>
-        <div id="footer">
+        </section>
+        <footer>
             Site proudly generated by
             <a href="http://jaspervdj.be/hakyll">Hakyll</a>
-        </div>
-    </body>
+        </footer>
+    </div>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</body>
+
 </html>

@@ -1,31 +1,30 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
-    <head>
-        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <title>ozkutuk's blog - Ray Marching</title>
-        <link rel="stylesheet" type="text/css" href="../css/default.css" />
-    </head>
-    <body>
-        <div id="header">
-            <div id="logo">
-                <a href="../">ozkutuk's blog</a>
-            </div>
-            <div id="navigation">
-                <a href="../about.html">About</a>
-                <a href="../archive.html">Archive</a>
-            </div>
-        </div>
+<!DOCTYPE html>
+<html lang="en">
 
-        <div id="content">
-            <h1>Ray Marching</h1>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>ozkutuk's blog - Ray Marching</title>
 
+    <link rel="stylesheet" type="text/css" href="../css/default.css" />
+</head>
+
+<body>
+    <div id="page-content">
+        <header>
+            <nav>
+                <div id="logo">
+                    <a href="../">ozkutuk's blog</a>
+                </div>
+            </nav>
+        </header>
+
+        <section role="main">
             <div class="info">
     Posted on June 14, 2019
     
 </div>
 
-<p>{% include math.html %}</p>
 <p>Some time ago, I discovered <a href="https://www.shadertoy.com">Shadertoy</a>. For those who don’t know, it is a website where people submit their GL shaders and they can be viewed in the browser, inside the Shadertoy’s environment. There are lots and lots of creative and mind-blowing work there, if you have an interest in graphics, be sure to check it out. Even if you are not interested in the technical side, it can still be an entertaining activity, at least it is for me!</p>
 <p>Anyway, if you spend any more than five minutes on Shadertoy, you will see someone mentioning they used ray marching technique to achieve what they did. But what is ray marching? How it is different from ray tracing? Why would one prefer it over ray tracing? To answer these questions, I took a small break from my raytracer and decided to implement a small ray marching engine. Hopefully we will find out the answers along the way. Onwards!</p>
 <h3 id="what-is-ray-marching-good-for-anyway">What is ray marching good for anyway?</h3>
@@ -33,13 +32,8 @@
 <h4 id="fractals">Fractals</h4>
 <p>For me, this was the selling point. With traditional ray tracing methods, rendering fractals is either very cumbersome or outright impossible (we will see why in the upcoming sections). I was always fascinated by fractals and even rendered some of the popular 2D ones with Python back in high-school. But rendering 3D fractals? I’m sold!</p>
 <p>Here is what we can possibly achieve with the help of ray marching:</p>
-<figure style="text-align: center">
-<div style="text-align: center">
-<pre><code>&lt;img src=&quot;/assets/mandelbulb.jpg&quot; alt=&quot;The mandelbulb&quot; width=&quot;400&quot;&gt;</code></pre>
-</div>
-<figcaption>
-The mandelbulb. Source: Wikipedia
-</figcaption>
+<figure>
+<img src="../assets/mandelbulb.jpg" alt /><figcaption>The mandelbulb. Source: Wikipedia</figcaption>
 </figure>
 <h4 id="implicit-surfaces-and-csgs">Implicit surfaces and CSGs</h4>
 <p>We can extend the idea behind fractals, and actually render other implicit surfaces. These may include some of our common object types like spheres or boxes and some other surfaces which we have not rendered before (torus is one example). We can also combine our surfaces to create new surfaces, which is called <em>Constructive solid geometry</em>, or CSG for short. This way we can express some surfaces with much ease, compared to the explicit alternatives.</p>
@@ -47,12 +41,14 @@ The mandelbulb. Source: Wikipedia
 <p>I have not implemented this myself, so take my word with grain of salt. However, as far as my knowledge goes, ray marching is also a suitable strategy for parallel renderer implementations. The ray marching algorithm is generally involved with only local information at each step. This means less divergence between parallel tasks and in turn more opportunity to parallelize.</p>
 <p>Now that we see why ray marching is useful, let’s have a look in what ways it is different than ray tracing.</p>
 <h3 id="back-to-basics-surfaces">Back to basics: surfaces</h3>
-<p>In order to understand how ray marching works, let’s go over what we have been doing with ray tracing up until now. First of all, we need a scene to render, right? In this scene description, we describe lights, camera, materials, and most importantly object data. This object data includes vertex positions and in the case of other specific objects it may include additional data (like radius for sphere). This is defining surface geometry <em>explicitly</em>. This means that we can solve the intersection formula directly for the <span class="math inline"><em>t</em></span> value. An example would be the ray-sphere intersection formula:</p>
-<p><br /><span class="math display">(<em>p</em> − <em>c</em>) ⋅ (<em>p</em> − <em>c</em>) − <em>R</em><sup>2</sup> = 0</span><br /></p>
-<p>Solving the equation for the <span class="math inline"><em>t</em></span> parameter yields:</p>
-<p><br /><span class="math display">$$
+<p>In order to understand how ray marching works, let’s go over what we have been doing with ray tracing up until now. First of all, we need a scene to render, right? In this scene description, we describe lights, camera, materials, and most importantly object data. This object data includes vertex positions and in the case of other specific objects it may include additional data (like radius for sphere). This is defining surface geometry <em>explicitly</em>. This means that we can solve the intersection formula directly for the <span class="math inline">\(t\)</span> value. An example would be the ray-sphere intersection formula:</p>
+<p><span class="math display">\[
+(p - c)\cdot(p - c) - R^2 = 0
+\]</span></p>
+<p>Solving the equation for the <span class="math inline">\(t\)</span> parameter yields:</p>
+<p><span class="math display">\[
 t = \frac{-d\cdot (o-c) \pm \sqrt{(d\cdot (o-c))^2 - (d \cdot d)((o-c)\cdot (o-c) - R^2)}}{d\cdot d}
-$$</span><br /></p>
+\]</span></p>
 <p>And it has been serving our needs until this point. But sometimes the surface function is very hard (or impossible) to solve. This is where implicit surfaces come to play. In contrast with explicit surfaces, we do not solve the formula directly. But we try out values on the formula and get a response regarding if we intersect or not.</p>
 <h3 id="how-ray-marching-works">How ray marching works</h3>
 <p>We can summarize the ray marching in two steps: 1. We march forward the ray direction in increments 2. Check if the distance to the surface is in an acceptable range</p>
@@ -60,53 +56,38 @@ $$</span><br /></p>
 <h4 id="sphere-tracing">Sphere tracing</h4>
 <p>Sphere tracing is a way to speed up the ray marching algorithm. Our fear was to take too big of a step to miss an intersection. Then we will take <em>the biggest step such that we don’t miss an intersection</em>. But how? Well, if we knew our distance to the closest thing in the scene from our current position, we could take a step that big and there wouldn’t be any missed intersection. Hopefully, we represent our scene with exactly that: signed distance functions!</p>
 <h4 id="signed-distance-function">Signed distance function</h4>
-<p>Signed distance function, despite its cool name, a very simple function. It accepts a point as argument, and returns the shortest distance between that point and some surface. We can use these SDFs to express our surfaces. In fact, we can represent a sphere originating at <span class="math inline">(0, 0, 0)</span> and <span class="math inline"><em>r</em> = 1</span> with this SDF:</p>
-<p><br /><span class="math display">$$
+<p>Signed distance function, despite its cool name, a very simple function. It accepts a point as argument, and returns the shortest distance between that point and some surface. We can use these SDFs to express our surfaces. In fact, we can represent a sphere originating at <span class="math inline">\((0, 0, 0)\)</span> and <span class="math inline">\(r=1\)</span> with this SDF:</p>
+<p><span class="math display">\[
 f(x,y,z) = \sqrt{x^2 + y^2 + z^2} - 1
-$$</span><br /></p>
+\]</span></p>
 <p>We plug our point to the function, and get our distance to the sphere represented by it. Simple stuff.</p>
-<p>We haven’t talked about the second step of ray marching yet, but there is not much to it. We apply the SDF and check the result. There is a reason it is <em>signed</em> distance function, the sign tells us if the point is inside or outside the surface. And we use that information to check if there is an intersection! If <span class="math inline"><em>f</em>(<em>p</em><em>o</em><em>i</em><em>n</em><em>t</em>) &lt; 0</span>, the point is inside the surface, hence intersection. We need a bit of a caution here. Remember sphere tracing? We take a step as big as our distance to the scene. But that way, we can never reach inside the surface! Therefore we define a small <span class="math inline"><em>ϵ</em></span> value such that we call it an intersection when <span class="math inline"><em>f</em>(<em>p</em><em>o</em><em>i</em><em>n</em><em>t</em>) &lt; <em>ϵ</em></span>.</p>
+<p>We haven’t talked about the second step of ray marching yet, but there is not much to it. We apply the SDF and check the result. There is a reason it is <em>signed</em> distance function, the sign tells us if the point is inside or outside the surface. And we use that information to check if there is an intersection! If <span class="math inline">\(f(point) &lt; 0\)</span>, the point is inside the surface, hence intersection. We need a bit of a caution here. Remember sphere tracing? We take a step as big as our distance to the scene. But that way, we can never reach inside the surface! Therefore we define a small <span class="math inline">\(\epsilon\)</span> value such that we call it an intersection when <span class="math inline">\(f(point) &lt; \epsilon\)</span>.</p>
 <p>Enough theory, let’s see some action!</p>
 <h3 id="implementation">Implementation</h3>
 <p>I almost explained all the theory, so I am about to leave you with some images. Below you will see a render of a pretty common tetrahedron fractal and examples of basic CSG operations.</p>
-<figure style="text-align: center">
-<div style="text-align: center">
-<pre><code>&lt;img src=&quot;/assets/tetrahedron.png&quot; alt=&quot;Tetrahedron&quot; width=&quot;400&quot;&gt;</code></pre>
-</div>
-<figcaption>
-Tetrahedron fractal
-</figcaption>
+<figure>
+<img src="../assets/tetrahedron.png" alt /><figcaption>Tetrahedron fractal</figcaption>
 </figure>
-<figure style="text-align: center">
-<div style="text-align: center">
-<pre><code>&lt;img src=&quot;/assets/spheres_union.png&quot; alt=&quot;union&quot; width=&quot;400&quot;&gt;</code></pre>
-</div>
-<figcaption>
-Union of two spheres
-</figcaption>
+<figure>
+<img src="../assets/spheres_union.png" alt /><figcaption>Union of two spheres</figcaption>
 </figure>
-<figure style="text-align: center">
-<div style="text-align: center">
-<pre><code>&lt;img src=&quot;/assets/spheres_intersection.png&quot; alt=&quot;intersection&quot; width=&quot;400&quot;&gt;</code></pre>
-</div>
-<figcaption>
-Intersection of two spheres
-</figcaption>
+<figure>
+<img src="../assets/spheres_intersection.png" alt /><figcaption>Intersection of two spheres</figcaption>
 </figure>
-<figure style="text-align: center">
-<div style="text-align: center">
-<pre><code>&lt;img src=&quot;/assets/spheres_diff.png&quot; alt=&quot;difference&quot; width=&quot;400&quot;&gt;</code></pre>
-</div>
-<figcaption>
-Difference of two spheres
-</figcaption>
+<figure>
+<img src="../assets/spheres_diff.png" alt /><figcaption>Difference of two spheres</figcaption>
 </figure>
 <p>There are some extra stuff regarding the shading and CSGs, but I think there are much better resources to learn them from. If you want to explore them further, you can refer to <a href="http://jamie-wong.com/2016/07/15/ray-marching-signed-distance-functions/">Jamie Wong’s awesome blog post</a>. Ray marching is a vastly deep topic and there is much to learn. What I did was merely a proof-of-concept, but it was just a little side-project for me. Next time, we will continue on with our raytracer to implement some matrix operations and hopefully instancing. Until then, happy coding!</p>
 
-        </div>
-        <div id="footer">
+        </section>
+        <footer>
             Site proudly generated by
             <a href="http://jaspervdj.be/hakyll">Hakyll</a>
-        </div>
-    </body>
+        </footer>
+    </div>
+
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</body>
+
 </html>
