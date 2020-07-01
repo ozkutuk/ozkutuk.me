@@ -52,7 +52,11 @@ t = \frac{-d\cdot (o-c) \pm \sqrt{(d\cdot (o-c))^2 - (d \cdot d)((o-c)\cdot (o-c
 \]</span></p>
 <p>And it has been serving our needs until this point. But sometimes the surface function is very hard (or impossible) to solve. This is where implicit surfaces come to play. In contrast with explicit surfaces, we do not solve the formula directly. But we try out values on the formula and get a response regarding if we intersect or not.</p>
 <h3 id="how-ray-marching-works">How ray marching works</h3>
-<p>We can summarize the ray marching in two steps: 1. We march forward the ray direction in increments 2. Check if the distance to the surface is in an acceptable range</p>
+<p>We can summarize the ray marching in two steps:</p>
+<ol type="1">
+<li>We march forward the ray direction in increments</li>
+<li>Check if the distance to the surface is in an acceptable range</li>
+</ol>
 <p>The thing about first step is, determining the step size is a bit problematic. If the step size is too big, we may possibly miss an intersection. If it is too small, well, it would work <em>in theory</em>, however it would to too computationally costly to actually use. There is a solution to this: we don’t need to use fixed step sizes. Sphere tracing method is based on this idea, so let’s explore it further.</p>
 <h4 id="sphere-tracing">Sphere tracing</h4>
 <p>Sphere tracing is a way to speed up the ray marching algorithm. Our fear was to take too big of a step to miss an intersection. Then we will take <em>the biggest step such that we don’t miss an intersection</em>. But how? Well, if we knew our distance to the closest thing in the scene from our current position, we could take a step that big and there wouldn’t be any missed intersection. Hopefully, we represent our scene with exactly that: signed distance functions!</p>
