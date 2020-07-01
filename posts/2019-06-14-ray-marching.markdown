@@ -44,6 +44,7 @@ And it has been serving our needs until this point. But sometimes the surface fu
 
 ### How ray marching works
 We can summarize the ray marching in two steps:
+
 1. We march forward the ray direction in increments
 2. Check if the distance to the surface is in an acceptable range
 
