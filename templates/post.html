@@ -1,8 +1,10 @@
 <div class="info">
-    Posted on $date$
+    Posted on <time datetime="$dateMachine$">$date$</time>
     $if(author)$
         by $author$
     $endif$
 </div>
 
-$body$
+<article>
+    $body$
+</article>
