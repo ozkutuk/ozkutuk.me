@@ -3,8 +3,8 @@ version:             0.1.0.0
 homepage:            https://ozkutuk.me
 license:             BSD3
 license-file:        LICENSE
-author:              Berk Ozkutuk
-maintainer:          ozkutuk.berk@gmail.com
+author:              Berk Ozkutuk <ozkutuk.berk@gmail.com>
+maintainer:          Berk Ozkutuk <ozkutuk.berk@gmail.com>
 build-type:          Simple
 extra-source-files:  README.md
 cabal-version:       >=1.10
@@ -13,7 +13,7 @@ executable site
   main-is:             Site.hs
   hs-source-dirs:      src
   default-language:    Haskell2010
-  ghc-options:         -threaded -Wall
+  ghc-options:         -threaded -Wall -Wcompat -Wredundant-constraints -Wincomplete-uni-patterns -Wincomplete-record-updates
   build-depends:       base >= 4.7 && < 5,
                        hakyll,
                        pandoc
