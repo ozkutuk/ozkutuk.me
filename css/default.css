@@ -52,7 +52,7 @@ html {
 a,
 a:visited {
     color: #574D38;
-    text-decoration: none;
+    /* text-decoration: none; */
 }
 
 header {
