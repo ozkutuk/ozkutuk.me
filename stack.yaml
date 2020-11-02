@@ -36,8 +36,6 @@ packages:
 #
 extra-deps:
 - hakyll-4.13.3.0
-- github: haskell/network
-  commit: db2e47b27505539e12988d22beaa795b802896aa
 
 # Override default flag values for local packages and extra-deps
 # flags: {}
