@@ -1,19 +1,20 @@
-name:                ozkutuk-blog
-version:             0.1.0.0
-homepage:            https://ozkutuk.me
-license:             BSD3
-license-file:        LICENSE
-author:              Berk Ozkutuk <ozkutuk.berk@gmail.com>
-maintainer:          Berk Ozkutuk <ozkutuk.berk@gmail.com>
-build-type:          Simple
-extra-source-files:  README.md
-cabal-version:       >=1.10
+cabal-version:       3.0
 
-executable site
-  main-is:             Site.hs
-  hs-source-dirs:      src
-  default-language:    Haskell2010
-  ghc-options:         -threaded -Wall -Wcompat -Wredundant-constraints -Wincomplete-uni-patterns -Wincomplete-record-updates
-  build-depends:       base >= 4.7 && < 5,
-                       hakyll,
-                       pandoc
+name:                ozkutuk-blog
+synopsis:            source of ozkutuk.me
+version:             0.0.1.0
+homepage:            https://ozkutuk.me
+license:             BSD-3-Clause
+author:              Berk Ozkutuk
+maintainer:          Berk Ozkutuk
+copyright:           Berk Ozkutuk
+build-type:          Simple
+
+executable ozkutuk-blog
+  main-is:            Site.hs
+  hs-source-dirs:     src
+  default-language:   Haskell2010
+  ghc-options:        -threaded -O2 -Wall -Wcompat -Wredundant-constraints -Wincomplete-uni-patterns -Wincomplete-record-updates
+  build-depends:      base >= 4.11 && < 5
+                    , hakyll
+                    , pandoc
