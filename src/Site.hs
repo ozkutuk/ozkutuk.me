@@ -15,7 +15,7 @@ writerWithMath =
 
 main :: IO ()
 main = hakyll $ do
-  match "assets/*" $ do
+  match ("assets/*" .||. "CNAME") $ do
     route idRoute
     compile copyFileCompiler
 
