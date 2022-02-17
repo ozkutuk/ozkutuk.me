@@ -1,10 +1,10 @@
-# Created by https://www.gitignore.io/api/haskell
-
-### Haskell ###
+# Haskell
 dist
+dist-*
 cabal-dev
 *.o
 *.hi
+*.hie
 *.chi
 *.chs.h
 *.dyn_o
@@ -16,6 +16,17 @@ cabal.sandbox.config
 *.prof
 *.aux
 *.hp
+*.eventlog
 .stack-work/
+cabal.project.local
+cabal.project.local~
+.HTF/
+.ghc.environment.*
+
+# Hakyll
 _cache/
 _site/
+
+# Direnv
+.direnv
+.envrc
