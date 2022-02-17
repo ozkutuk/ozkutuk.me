@@ -13,8 +13,11 @@ writerWithMath :: WriterOptions
 writerWithMath =
   defaultHakyllWriterOptions {writerHTMLMathMethod = MathJax ""}
 
+config :: Configuration
+config = defaultConfiguration {providerDirectory = "content"}
+
 main :: IO ()
-main = hakyll $ do
+main = hakyllWith config $ do
   match ("assets/*" .||. "CNAME") $ do
     route idRoute
     compile copyFileCompiler
