@@ -27,7 +27,7 @@ let
     buildInputs = [
       pkgs.haskellPackages.cabal-install
       pkgs.haskellPackages.ghcid
-      pkgs.haskellPackages.ormolu
+      pkgs.haskellPackages.fourmolu
       pkgs.haskellPackages.hlint
       pkgs.niv
       pkgs.nixpkgs-fmt
