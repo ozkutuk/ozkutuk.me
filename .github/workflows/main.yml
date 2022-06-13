@@ -21,7 +21,7 @@ jobs:
       - run: nix-build -A website
 
       - name: Artifact pages
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: pages
           path: result/dist
