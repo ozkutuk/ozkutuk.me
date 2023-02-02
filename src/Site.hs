@@ -13,6 +13,16 @@ writerWithMath :: WriterOptions
 writerWithMath =
   defaultHakyllWriterOptions {writerHTMLMathMethod = MathJax ""}
 
+feed :: FeedConfiguration
+feed =
+  FeedConfiguration
+    { feedTitle = "ozkutuk's blog"
+    , feedDescription = "ozkutuk's blog"
+    , feedAuthorName = "Berk Özkütük"
+    , feedAuthorEmail = ""
+    , feedRoot = "https://ozkutuk.me"
+    }
+
 config :: Configuration
 config = defaultConfiguration {providerDirectory = "content"}
 
@@ -31,6 +41,7 @@ main = hakyllWith config $ do
     compile $
       pandocCompilerWith defaultHakyllReaderOptions writerWithMath
         >>= loadAndApplyTemplate "templates/post.html" postCtx
+        >>= saveSnapshot "content"
         >>= loadAndApplyTemplate "templates/default.html" postCtx
         >>= relativizeUrls
 
@@ -48,7 +59,23 @@ main = hakyllWith config $ do
         >>= loadAndApplyTemplate "templates/default.html" indexCtx
         >>= relativizeUrls
 
+  create ["atom.xml"] $ do
+    route idRoute
+    compile (feedCompiler renderAtom)
+
+  create ["rss.xml"] $ do
+    route idRoute
+    compile (feedCompiler renderRss)
+
   match "templates/*" $ compile templateCompiler
+
+type FeedRenderer = FeedConfiguration -> Context String -> [Item String] -> Compiler (Item String)
+
+feedCompiler :: FeedRenderer -> Compiler (Item String)
+feedCompiler renderer = do
+  let feedCtx = postCtx `mappend` bodyField "description"
+  posts <- fmap (take 10) . recentFirst =<< loadAllSnapshots "posts/*" "content"
+  renderer feed feedCtx posts
 
 --------------------------------------------------------------------------------
 postCtx :: Context String
