@@ -73,12 +73,10 @@ header nav {
 }
 
 header nav>a {
-    color: black;
     font-size: 18px;
     font-weight: bold;
     margin-left: 12px;
     text-decoration: none;
-    text-transform: uppercase;
 }
 
 footer {
