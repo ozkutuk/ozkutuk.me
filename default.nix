@@ -17,6 +17,13 @@ let
       # The commit that allows base 4.15 is not published to Hackage
       # as of 2022-02-14
       aeson-diff = pkgs.haskell.lib.doJailbreak hsuper.aeson-diff;
+
+      hakyll =
+        hself.callCabal2nix
+          "hakyll"
+          (gitignore sources.hakyll)
+          # (gitignore ./vendored/hakyll)
+          {};
     };
   };
 

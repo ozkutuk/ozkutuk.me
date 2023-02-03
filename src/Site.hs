@@ -1,13 +1,10 @@
 --------------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE TemplateHaskell #-}
 
 import qualified Data.Aeson as Aeson
 import qualified Data.ByteString.Char8 as BS
 import qualified Data.ByteString.Lazy.Char8 as LBS
-import Data.FileEmbed (makeRelativeToProject)
 import Hakyll
-import System.FilePath ((</>))
 import Text.Pandoc.Options (
   HTMLMathMethod (..),
   WriterOptions (..),
@@ -78,16 +75,6 @@ main = hakyllWith config $ do
     compile (feedCompiler renderJsonFeed)
 
   match "templates/*" $ compile templateCompiler
-
--- feedTemplate :: Template
--- feedTemplate =
---     $(makeRelativeToProject ("content" </> "templates" </> "feed.json")
---         >>= embedTemplate)
---
--- itemTemplate :: Template
--- itemTemplate =
---     $(makeRelativeToProject ("content" </> "templates" </> "feed-item.json")
---         >>= embedTemplate)
 
 type FeedRenderer = FeedConfiguration -> Context String -> [Item String] -> Compiler (Item String)
 

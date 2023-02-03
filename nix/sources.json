@@ -1,4 +1,16 @@
 {
+    "hakyll": {
+        "branch": "jsonfeed",
+        "description": "A static website compiler library in Haskell",
+        "homepage": "jaspervdj.be/hakyll",
+        "owner": "ozkutuk",
+        "repo": "hakyll",
+        "rev": "491488678dcef198d55eb0021ff0d3070f5172ff",
+        "sha256": "1wgm6ac0g8zcvibyc00ipc9ndwc2y5s56mhwzdfl63ghpw9jj8vb",
+        "type": "tarball",
+        "url": "https://github.com/ozkutuk/hakyll/archive/491488678dcef198d55eb0021ff0d3070f5172ff.tar.gz",
+        "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
+    },
     "nixpkgs": {
         "branch": "nixpkgs-unstable",
         "description": "Nix Packages collection",
