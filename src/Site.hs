@@ -1,7 +1,13 @@
 --------------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TemplateHaskell #-}
 
+import qualified Data.Aeson as Aeson
+import qualified Data.ByteString.Char8 as BS
+import qualified Data.ByteString.Lazy.Char8 as LBS
+import Data.FileEmbed (makeRelativeToProject)
 import Hakyll
+import System.FilePath ((</>))
 import Text.Pandoc.Options (
   HTMLMathMethod (..),
   WriterOptions (..),
@@ -67,13 +73,30 @@ main = hakyllWith config $ do
     route idRoute
     compile (feedCompiler renderRss)
 
+  create ["feed.json"] $ do
+    route idRoute
+    compile (feedCompiler renderJsonFeed)
+
   match "templates/*" $ compile templateCompiler
+
+-- feedTemplate :: Template
+-- feedTemplate =
+--     $(makeRelativeToProject ("content" </> "templates" </> "feed.json")
+--         >>= embedTemplate)
+--
+-- itemTemplate :: Template
+-- itemTemplate =
+--     $(makeRelativeToProject ("content" </> "templates" </> "feed-item.json")
+--         >>= embedTemplate)
 
 type FeedRenderer = FeedConfiguration -> Context String -> [Item String] -> Compiler (Item String)
 
 feedCompiler :: FeedRenderer -> Compiler (Item String)
 feedCompiler renderer = do
-  let feedCtx = postCtx `mappend` bodyField "description"
+  let feedCtx =
+        postCtx
+          `mappend` bodyField "description"
+          `mappend` mapContext (BS.unpack . LBS.toStrict . Aeson.encode) (bodyField "descriptionJson")
   posts <- fmap (take 10) . recentFirst =<< loadAllSnapshots "posts/*" "content"
   renderer feed feedCtx posts
 

@@ -1,0 +1,3 @@
+[submodule "vendored/hakyll"]
+	path = vendored/hakyll
+	url = https://github.com/ozkutuk/hakyll.git
