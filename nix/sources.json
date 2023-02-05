@@ -5,10 +5,10 @@
         "homepage": "jaspervdj.be/hakyll",
         "owner": "ozkutuk",
         "repo": "hakyll",
-        "rev": "011d8871117588c47da0705024eba8fc36b5f21e",
-        "sha256": "0igcbpln08j2rw3ysird4spc6kxpmydfsz2bm75wy1bx5gd4qggf",
+        "rev": "98468c03d21cb2729998b5d84d90e03df55c0d31",
+        "sha256": "1lkwkz4yhfmz4n1dz2fpx5wwzagvznhyhb1m1fy4sm57a3ll6cij",
         "type": "tarball",
-        "url": "https://github.com/ozkutuk/hakyll/archive/011d8871117588c47da0705024eba8fc36b5f21e.tar.gz",
+        "url": "https://github.com/ozkutuk/hakyll/archive/98468c03d21cb2729998b5d84d90e03df55c0d31.tar.gz",
         "url_template": "https://github.com/<owner>/<repo>/archive/<rev>.tar.gz"
     },
     "nixpkgs": {
