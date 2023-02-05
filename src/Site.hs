@@ -1,9 +1,7 @@
 --------------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings #-}
 
-import qualified Data.Aeson as Aeson
-import qualified Data.ByteString.Char8 as BS
-import qualified Data.ByteString.Lazy.Char8 as LBS
+import GHC.Show (showLitChar)
 import Hakyll
 import Text.Pandoc.Options (
   HTMLMathMethod (..),
@@ -83,9 +81,20 @@ feedCompiler renderer = do
   let feedCtx =
         postCtx
           `mappend` bodyField "description"
-          `mappend` mapContext (BS.unpack . LBS.toStrict . Aeson.encode) (bodyField "descriptionJson")
+          `mappend` mapContext escapeString (bodyField "descriptionJson")
   posts <- fmap (take 10) . recentFirst =<< loadAllSnapshots "posts/*" "content"
   renderer feed feedCtx posts
+
+escapeString :: String -> String
+escapeString = flip escapeString' ""
+  where
+    escapeString' :: String -> ShowS
+    escapeString' [] s = s
+    escapeString' ('"' : cs) s = showString "\\\"" (escapeString' cs s)
+    escapeString' (c : cs) s = escapeChar c (escapeString' cs s)
+
+    escapeChar :: Char -> ShowS
+    escapeChar c s = if c > '\DEL' then showChar c s else showLitChar c s
 
 --------------------------------------------------------------------------------
 postCtx :: Context String
