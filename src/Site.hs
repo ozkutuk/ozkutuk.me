@@ -1,7 +1,6 @@
 --------------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings #-}
 
-import GHC.Show (showLitChar)
 import Hakyll
 import Text.Pandoc.Options (
   HTMLMathMethod (..),
@@ -78,23 +77,9 @@ type FeedRenderer = FeedConfiguration -> Context String -> [Item String] -> Comp
 
 feedCompiler :: FeedRenderer -> Compiler (Item String)
 feedCompiler renderer = do
-  let feedCtx =
-        postCtx
-          `mappend` bodyField "description"
-          `mappend` mapContext escapeString (bodyField "descriptionJson")
+  let feedCtx = postCtx `mappend` bodyField "description"
   posts <- fmap (take 10) . recentFirst =<< loadAllSnapshots "posts/*" "content"
   renderer feed feedCtx posts
-
-escapeString :: String -> String
-escapeString = flip escapeString' ""
-  where
-    escapeString' :: String -> ShowS
-    escapeString' [] s = s
-    escapeString' ('"' : cs) s = showString "\\\"" (escapeString' cs s)
-    escapeString' (c : cs) s = escapeChar c (escapeString' cs s)
-
-    escapeChar :: Char -> ShowS
-    escapeChar c s = if c > '\DEL' then showChar c s else showLitChar c s
 
 --------------------------------------------------------------------------------
 postCtx :: Context String
