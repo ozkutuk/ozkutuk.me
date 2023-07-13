@@ -69,7 +69,7 @@ main = hakyllWith config $ do
 
   create ["feed.json"] $ do
     route idRoute
-    compile (feedCompiler renderJsonFeed)
+    compile (feedCompiler renderJson)
 
   match "templates/*" $ compile templateCompiler
 

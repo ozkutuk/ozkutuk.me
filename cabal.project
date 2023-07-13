@@ -3,4 +3,4 @@ packages: .
 source-repository-package
   type: git
   location: https://github.com/ozkutuk/hakyll.git
-  tag: 9dd52ddff87b6d949d84b66bcab91c0e51bd0d86
+  tag: fefe86b6c9e2b278839489c79aae931d5304d7c6

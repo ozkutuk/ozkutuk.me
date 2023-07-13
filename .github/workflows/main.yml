@@ -18,7 +18,7 @@ jobs:
           name: ozkutuk-blog
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
 
-      - run: nix-build -A website
+      - run: nix build .#website
 
       - name: Artifact pages
         uses: actions/upload-artifact@v3
