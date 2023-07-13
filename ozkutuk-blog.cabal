@@ -18,7 +18,3 @@ executable ozkutuk-blog
   build-depends:      base >= 4.11 && < 5
                     , hakyll
                     , pandoc
-                    , file-embed
-                    , filepath
-                    , aeson
-                    , bytestring
