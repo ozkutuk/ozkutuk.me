@@ -9,10 +9,10 @@
       url = "github:oxalica/nil";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-    # Necessary until JSON Feed support PR gets merged:
+    # Necessary until JSON Feed support PR gets published on Hackage:
     # https://github.com/jaspervdj/hakyll/pull/975
     hakyll = {
-      url = "github:ozkutuk/hakyll/jsonfeed";
+      url = "github:jaspervdj/hakyll";
       flake = false;
     };
   };

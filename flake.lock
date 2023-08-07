@@ -57,16 +57,15 @@
     "hakyll": {
       "flake": false,
       "locked": {
-        "lastModified": 1684747659,
-        "narHash": "sha256-2H941VnbtgUIODBcthFJB2d+EDn52G4uRFfPgMsfxUo=",
-        "owner": "ozkutuk",
+        "lastModified": 1691356309,
+        "narHash": "sha256-B2G1PUtnsVXZuv5FAcCm3BWClKc7eRDO3d/k1apAZYo=",
+        "owner": "jaspervdj",
         "repo": "hakyll",
-        "rev": "fefe86b6c9e2b278839489c79aae931d5304d7c6",
+        "rev": "9367a88b5be69e16048240893890282b8e70b759",
         "type": "github"
       },
       "original": {
-        "owner": "ozkutuk",
-        "ref": "jsonfeed",
+        "owner": "jaspervdj",
         "repo": "hakyll",
         "type": "github"
       }
