@@ -64,7 +64,7 @@
 
           installPhase = ''
             mkdir -p "$out/dist"
-            cp -r _site/* "$out/dist"
+            cp -r _site/. "$out/dist"
           '';
         };
       in {
