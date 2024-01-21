@@ -1,6 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
 
+import Crypto.Hash (Digest, SHA1)
+import Crypto.Hash qualified as Crypto
+import Data.ByteArray qualified as ByteArray
+import Data.ByteString.Base32.Z qualified as Z
+import Data.ByteString.Char8 qualified as BS8
 import Data.Foldable (for_)
+import Data.Text qualified as T
+import Data.Text.Encoding qualified as T
 import Hakyll
 import Text.Pandoc.Options (
   HTMLMathMethod (..),
@@ -59,7 +66,37 @@ main = hakyllWith config $ do
 
   createFeeds
 
+  createWkd "DAA0CE3407FB8F8C2B74DBB82759D1BC5A8659A8" "berk"
+
   match "templates/*" $ compile templateCompiler
+
+createWkd :: String -> String -> Rules ()
+createWkd keyFile localPart = do
+  createPolicy
+  createKey
+  where
+    wkdWellknown :: FilePath
+    wkdWellknown = ".well-known/openpgpkey/"
+
+    createPolicy :: Rules ()
+    createPolicy = create [fromFilePath $ wkdWellknown <> "policy"] $ do
+      route idRoute
+      compile $ makeItem @String ""
+
+    createKey :: Rules ()
+    createKey = create [fromFilePath $ keyFile <> ".pgp"] $ do
+      let localPartHash = hashLocalPart localPart
+      route $ constRoute (wkdWellknown <> "hu/" <> localPartHash)
+      compile copyFileCompiler
+
+-- Extracted from: https://github.com/frasertweedale/hakyll-wkd/blob/master/site.hs
+hashLocalPart :: String -> String
+hashLocalPart localPart =
+  let
+    digest :: Digest SHA1
+    digest = Crypto.hash . T.encodeUtf8 . T.toLower . T.pack $ localPart
+   in
+    BS8.unpack . Z.encode . ByteArray.convert $ digest
 
 type FeedRenderer = FeedConfiguration -> Context String -> [Item String] -> Compiler (Item String)
 
