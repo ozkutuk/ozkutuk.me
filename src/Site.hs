@@ -1,13 +1,11 @@
---------------------------------------------------------------------------------
 {-# LANGUAGE OverloadedStrings #-}
 
+import Data.Foldable (for_)
 import Hakyll
 import Text.Pandoc.Options (
   HTMLMathMethod (..),
   WriterOptions (..),
  )
-
---------------------------------------------------------------------------------
 
 writerWithMath :: WriterOptions
 writerWithMath =
@@ -59,21 +57,24 @@ main = hakyllWith config $ do
         >>= loadAndApplyTemplate "templates/default.html" indexCtx
         >>= relativizeUrls
 
-  create ["atom.xml"] $ do
-    route idRoute
-    compile (feedCompiler renderAtom)
-
-  create ["rss.xml"] $ do
-    route idRoute
-    compile (feedCompiler renderRss)
-
-  create ["feed.json"] $ do
-    route idRoute
-    compile (feedCompiler renderJson)
+  createFeeds
 
   match "templates/*" $ compile templateCompiler
 
 type FeedRenderer = FeedConfiguration -> Context String -> [Item String] -> Compiler (Item String)
+
+createFeeds :: Rules ()
+createFeeds = for_ feedRoutes $ \(path, feed') ->
+  create [path] $ do
+    route idRoute
+    compile (feedCompiler feed')
+  where
+    feedRoutes :: [(Identifier, FeedRenderer)]
+    feedRoutes =
+      [ ("feed.json", renderJson)
+      , ("atom.xml", renderAtom)
+      , ("rss.xml", renderRss)
+      ]
 
 feedCompiler :: FeedRenderer -> Compiler (Item String)
 feedCompiler renderer = do
@@ -81,7 +82,6 @@ feedCompiler renderer = do
   posts <- fmap (take 10) . recentFirst =<< loadAllSnapshots "posts/*" "content"
   renderer feed feedCtx posts
 
---------------------------------------------------------------------------------
 postCtx :: Context String
 postCtx =
   dateField "date" "%B %e, %Y"
