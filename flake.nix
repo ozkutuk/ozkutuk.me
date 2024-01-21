@@ -5,24 +5,12 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-parts.url = "github:hercules-ci/flake-parts";
     gitignore.url = "github:hercules-ci/gitignore.nix";
-    nil = {
-      url = "github:oxalica/nil";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-    # Necessary until JSON Feed support PR gets published on Hackage:
-    # https://github.com/jaspervdj/hakyll/pull/975
-    hakyll = {
-      url = "github:jaspervdj/hakyll";
-      flake = false;
-    };
   };
 
   outputs = inputs @ {
     nixpkgs,
     flake-parts,
     gitignore,
-    nil,
-    hakyll,
     ...
   }:
     flake-parts.lib.mkFlake {inherit inputs;} {
@@ -45,7 +33,6 @@
         inherit (gitignore.lib) gitignoreSource;
         overlay = self: super: {
           ozkutuk-blog = self.callCabal2nix "ozkutuk-blog" (gitignoreSource ./.) {};
-          hakyll = self.callCabal2nix "hakyll" (gitignoreSource hakyll) {};
         };
         haskellPackages' = pkgs.haskellPackages.extend overlay;
 
@@ -97,7 +84,7 @@
             fourmolu
 
             pkgs.alejandra
-            nil.packages.${system}.nil
+            pkgs.nil
           ];
           withHoogle = true;
         };
