@@ -66,27 +66,27 @@ main = hakyllWith config $ do
 
   createFeeds
 
-  createWkd "DAA0CE3407FB8F8C2B74DBB82759D1BC5A8659A8" "berk"
+  createWkd "DAA0CE3407FB8F8C2B74DBB82759D1BC5A8659A8" "ozkutuk.me" "berk"
 
   match "templates/*" $ compile templateCompiler
 
-createWkd :: String -> String -> Rules ()
-createWkd keyFile localPart = do
+createWkd :: String -> String -> String -> Rules ()
+createWkd keyFile domain localPart = do
   createPolicy
   createKey
   where
-    wkdWellknown :: FilePath
     wkdWellknown = ".well-known/openpgpkey/"
+    policy = wkdWellknown <> domain <> "/policy"
+    keyPath = wkdWellknown <> domain <> "/hu/" <> hashLocalPart localPart
 
     createPolicy :: Rules ()
-    createPolicy = create [fromFilePath $ wkdWellknown <> "policy"] $ do
+    createPolicy = create [fromFilePath policy] $ do
       route idRoute
       compile $ makeItem @String ""
 
     createKey :: Rules ()
     createKey = create [fromFilePath $ keyFile <> ".pgp"] $ do
-      let localPartHash = hashLocalPart localPart
-      route $ constRoute (wkdWellknown <> "hu/" <> localPartHash)
+      route $ constRoute keyPath
       compile copyFileCompiler
 
 -- Extracted from: https://github.com/frasertweedale/hakyll-wkd/blob/master/site.hs
