@@ -1,20 +1,23 @@
-cabal-version:       3.0
-
-name:                ozkutuk-blog
-synopsis:            source of ozkutuk.me
-version:             0.0.1.0
-homepage:            https://ozkutuk.me
-license:             BSD-3-Clause
-author:              Berk Ozkutuk
-maintainer:          Berk Ozkutuk
-copyright:           Berk Ozkutuk
-build-type:          Simple
+cabal-version: 3.0
+name:          ozkutuk-blog
+synopsis:      source of ozkutuk.me
+version:       0.0.1.0
+homepage:      https://ozkutuk.me
+license:       BSD-3-Clause
+author:        Berk Ozkutuk
+maintainer:    Berk Ozkutuk
+copyright:     Berk Ozkutuk
+build-type:    Simple
 
 executable ozkutuk-blog
-  main-is:            Site.hs
-  hs-source-dirs:     src
-  default-language:   GHC2021
-  ghc-options:        -threaded -O2 -Wall -Wcompat -Wredundant-constraints -Wunused-packages
-  build-depends:      base >= 4.11 && < 5
-                    , hakyll
-                    , pandoc
+  main-is:          Site.hs
+  hs-source-dirs:   src
+  default-language: GHC2021
+  ghc-options:
+    -threaded -O2 -Wall -Wcompat -Wredundant-constraints
+    -Wunused-packages
+
+  build-depends:
+    , base    >=4.11 && <5
+    , hakyll
+    , pandoc
