@@ -31,13 +31,8 @@
         ...
       }: let
         inherit (gitignore.lib) gitignoreSource;
-        inherit (pkgs.haskell.lib) appendPatch dontCheck unmarkBroken;
         overlay = self: super: {
           ozkutuk-blog = self.callCabal2nix "ozkutuk-blog" (gitignoreSource ./.) {};
-          base32-z-bytestring = dontCheck (unmarkBroken (appendPatch super.base32-z-bytestring (pkgs.fetchpatch {
-            url = "https://github.com/oscoin/base32-z-bytestring/commit/594f53d245f4ecde710dd720b9ac490b855c0f04.patch";
-            sha256 = "sha256-MvqvmDfgK609g3qFijWhnsONHaZW05tx7oQL2TNQLV8=";
-          })));
         };
         haskellPackages' = pkgs.haskellPackages.extend overlay;
 
