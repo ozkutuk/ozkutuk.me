@@ -26,7 +26,7 @@ config = defaultConfiguration {providerDirectory = "content"}
 
 main :: IO ()
 main = hakyllWith config $ do
-  match ("assets/*" .||. "CNAME") $ do
+  match ("assets/*" .||. "CNAME" .||. "*.asc") $ do
     route idRoute
     compile copyFileCompiler
 
