@@ -85,6 +85,7 @@
 
             pkgs.alejandra
             pkgs.nil
+            pkgs.just
           ];
           withHoogle = true;
         };
