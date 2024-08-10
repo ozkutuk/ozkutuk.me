@@ -7,6 +7,12 @@
     $endif$
 </div>
 
+$if(isDraft)$
+    <div class="warn-draft">
+        <p>This post is in draft state, the content is subject to change!</p>
+    </div>
+$endif$
+
 <article>
     $body$
 </article>

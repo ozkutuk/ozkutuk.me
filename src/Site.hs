@@ -1,7 +1,10 @@
+{-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
 
+import Control.Monad (filterM, (>=>))
 import Data.Foldable (for_)
 import Hakyll
+import System.FilePath qualified as File
 import Text.Pandoc.Options (
   HTMLMathMethod (..),
   WriterOptions (..),
@@ -34,8 +37,17 @@ main = hakyllWith config $ do
     route idRoute
     compile compressCssCompiler
 
-  match "posts/*" $ do
+  matchMetadata "posts/*" isPublished $ do
     route $ setExtension "html"
+    compile $
+      pandocCompilerWith defaultHakyllReaderOptions writerWithMath
+        >>= saveSnapshot "content"
+        >>= loadAndApplyTemplate "templates/post.html" postCtx
+        >>= loadAndApplyTemplate "templates/default.html" postCtx
+        >>= relativizeUrls
+
+  matchMetadata "posts/*" isDraft $ do
+    route . customRoute $ makeDraftUrl
     compile $
       pandocCompilerWith defaultHakyllReaderOptions writerWithMath
         >>= saveSnapshot "content"
@@ -53,11 +65,11 @@ main = hakyllWith config $ do
   match "index.html" $ do
     route idRoute
     compile $ do
-      posts <- recentFirst =<< loadAll "posts/*"
+      publishedPosts <- filterPublished =<< loadAll "posts/*"
       let indexCtx =
-            listField "posts" postCtx (return posts)
-              `mappend` constField "title" "Home"
-              `mappend` defaultContext
+            listField "posts" postCtx (pure publishedPosts)
+              <> constField "title" "Home"
+              <> defaultContext
 
       getResourceBody
         >>= applyAsTemplate indexCtx
@@ -67,6 +79,18 @@ main = hakyllWith config $ do
   createFeeds
 
   match "templates/*" $ compile templateCompiler
+
+makeDraftUrl :: Identifier -> FilePath
+makeDraftUrl = File.combine "drafts" . flip File.replaceExtension "html" . File.takeFileName . toFilePath
+
+isDraft :: Metadata -> Bool
+isDraft = (Just "true" ==) . lookupString "draft"
+
+isPublished :: Metadata -> Bool
+isPublished = not . isDraft
+
+filterPublished :: (MonadMetadata m) => [Item a] -> m [Item a]
+filterPublished = filterM (fmap isPublished . getMetadata . itemIdentifier)
 
 type FeedRenderer = FeedConfiguration -> Context String -> [Item String] -> Compiler (Item String)
 
@@ -85,12 +109,32 @@ createFeeds = for_ feedRoutes $ \(path, feed') ->
 
 feedCompiler :: FeedRenderer -> Compiler (Item String)
 feedCompiler renderer = do
-  let feedCtx = postCtx `mappend` bodyField "description"
-  posts <- fmap (take 10) . recentFirst =<< loadAllSnapshots "posts/*" "content"
+  let feedCtx = postCtx <> bodyField "description"
+  posts <- fmap (take 10) . recentFirst =<< filterPublished =<< loadAllSnapshots "posts/*" "content"
   renderer feed feedCtx posts
+
+-- Copied from Hakyll source since it is not exported
+field' :: String -> (Item a -> Compiler ContextField) -> Context a
+field' key value = Context $ \k _ i ->
+  if k == key
+    then value i
+    else noResult $ "Tried field " ++ key
+
+-- | Similar to 'boolField', but input function returns a 'Compiler'.
+-- Useful for accessing metadata.
+boolField' :: String -> (Item a -> Compiler Bool) -> Context a
+boolField' name f =
+  field' name $
+    f >=> \case
+      True -> pure EmptyField
+      False -> noResult $ "Field " ++ name ++ " is false"
+
+isDraftField :: Context String
+isDraftField = boolField' "isDraft" (fmap isDraft . getMetadata . itemIdentifier)
 
 postCtx :: Context String
 postCtx =
   dateField "date" "%B %e, %Y"
-    `mappend` dateField "dateMachine" "%Y-%m-%d"
-    `mappend` defaultContext
+    <> dateField "dateMachine" "%Y-%m-%d"
+    <> isDraftField
+    <> defaultContext

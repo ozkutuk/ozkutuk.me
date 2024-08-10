@@ -1,3 +1,11 @@
+:root {
+    --base-size-8: 0.5rem;
+    --base-size-16: 1rem;
+    --font-color-default: #574D38;
+    --bg-color-default: #F7F6F3;
+    --warn-bg-color: #CFCCC5;
+}
+
 html,
 body {
     width: 100%;
@@ -7,8 +15,8 @@ body {
 }
 
 html {
-    color: #574D38;
-    background-color: #F7F6F3;
+    color: var(--font-color-default);
+    background-color: var(--bg-color-default);
     font-family: 'PT Serif', serif;
 }
 
@@ -51,7 +59,7 @@ html {
 
 a,
 a:visited {
-    color: #574D38;
+    color: var(--font-color-default);
     /* text-decoration: none; */
 }
 
@@ -135,4 +143,17 @@ figcaption {
 
 ul#posts {
     list-style-type: none;
+}
+
+div.warn-draft {
+    padding: var(--base-size-8) var(--base-size-16);
+    margin-top: var(--base-size-16);
+    margin-bottom: var(--base-size-16);
+    border-left: .25em solid var(--border-color-default, var(--font-color-default));
+    background-color: var(--warn-bg-color);
+}
+
+div.warn-draft > p {
+    margin-top: 0;
+    margin-bottom: 0;
 }
