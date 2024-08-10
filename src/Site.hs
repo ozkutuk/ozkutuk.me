@@ -65,7 +65,7 @@ main = hakyllWith config $ do
   match "index.html" $ do
     route idRoute
     compile $ do
-      publishedPosts <- filterPublished =<< loadAll "posts/*"
+      publishedPosts <- recentFirst =<< filterPublished =<< loadAll "posts/*"
       let indexCtx =
             listField "posts" postCtx (pure publishedPosts)
               <> constField "title" "Home"
