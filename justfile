@@ -22,5 +22,5 @@ push-cachix:
 
 alias cr := create
 create postname:
-    ${EDITOR} content/posts/{{datetime_utc("%F")}}-{{postname}}
+    ${EDITOR} content/posts/{{datetime_utc("%F")}}-{{postname}}.md
 
