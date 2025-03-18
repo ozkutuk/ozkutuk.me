@@ -22,7 +22,7 @@ html {
 
 #page-content {
     font-size: 18px;
-    margin: 0px auto 0px auto;
+    margin: 0 auto;
     max-width: 45%;
 }
 
@@ -36,13 +36,13 @@ html {
     color: #7A7052;
 }
 
-@media (max-width: 70em) {
+@media (width <= 70em) {
     #page-content {
         max-width: 60%;
     }
 }
 
-@media (max-width: 50em) {
+@media (width <= 50em) {
     #page-content {
         max-width: 80%;
     }
@@ -57,23 +57,14 @@ html {
     }
 }
 
-a,
-a:visited {
+a {
     color: var(--font-color-default);
-    /* text-decoration: none; */
 }
 
 header {
     border-bottom: 2px solid black;
     margin-bottom: 30px;
-    padding: 32px 0px 28px 0px;
-}
-
-nav div#logo a {
-    float: left;
-    font-size: 18px;
-    font-weight: bold;
-    text-decoration: none;
+    padding: 32px 0 28px;
 }
 
 header nav {
@@ -84,6 +75,17 @@ header nav>a {
     font-size: 18px;
     font-weight: bold;
     margin-left: 12px;
+    text-decoration: none;
+}
+
+a:visited {
+    color: var(--font-color-default);
+}
+
+nav div#logo a {
+    float: left;
+    font-size: 18px;
+    font-weight: bold;
     text-decoration: none;
 }
 
@@ -136,8 +138,10 @@ figure {
     text-align: center;
     display: table;
     max-width: 60%;
+
     /* demo; set some amount (px or %) if you can */
     margin: 10px auto;
+
     /* not needed unless you want centered */
 }
 
