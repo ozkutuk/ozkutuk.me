@@ -9,10 +9,17 @@ import Text.Pandoc.Options (
   HTMLMathMethod (..),
   WriterOptions (..),
  )
+import Text.Pandoc.Highlighting qualified as Pandoc
 
-writerWithMath :: WriterOptions
-writerWithMath =
-  defaultHakyllWriterOptions {writerHTMLMathMethod = MathJax ""}
+pandocCodeStyle :: Pandoc.Style
+pandocCodeStyle = Pandoc.kate
+
+hakyllWriterOptions :: WriterOptions
+hakyllWriterOptions =
+  defaultHakyllWriterOptions
+    { writerHTMLMathMethod = MathJax ""
+    , writerHighlightStyle = Just pandocCodeStyle
+    }
 
 feed :: FeedConfiguration
 feed =
@@ -33,6 +40,11 @@ main = hakyllWith config $ do
     route idRoute
     compile copyFileCompiler
 
+  create ["css/syntax.css"] $ do
+    route idRoute
+    compile $ do
+      makeItem $ Pandoc.styleToCss pandocCodeStyle
+
   match "css/*.css" $ do
     route idRoute
     compile compressCssCompiler
@@ -40,7 +52,7 @@ main = hakyllWith config $ do
   matchMetadata "posts/*" isPublished $ do
     route $ setExtension "html"
     compile $
-      pandocCompilerWith defaultHakyllReaderOptions writerWithMath
+      pandocCompilerWith defaultHakyllReaderOptions hakyllWriterOptions
         >>= saveSnapshot "content"
         >>= loadAndApplyTemplate "templates/post.html" postCtx
         >>= loadAndApplyTemplate "templates/default.html" postCtx
@@ -49,7 +61,7 @@ main = hakyllWith config $ do
   matchMetadata "posts/*" isDraft $ do
     route . customRoute $ makeDraftUrl
     compile $
-      pandocCompilerWith defaultHakyllReaderOptions writerWithMath
+      pandocCompilerWith defaultHakyllReaderOptions hakyllWriterOptions
         >>= saveSnapshot "content"
         >>= loadAndApplyTemplate "templates/post.html" postCtx
         >>= loadAndApplyTemplate "templates/default.html" postCtx
