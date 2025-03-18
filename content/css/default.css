@@ -18,10 +18,10 @@ html {
     color: var(--font-color-default);
     background-color: var(--bg-color-default);
     font-family: 'PT Serif', serif;
+    font-size: 115%;
 }
 
 #page-content {
-    font-size: 18px;
     margin: 0 auto;
     max-width: 45%;
 }
@@ -62,9 +62,9 @@ a {
 }
 
 header {
-    border-bottom: 2px solid black;
+    border-bottom: 2px solid var(--font-color-default);
     margin-bottom: 30px;
-    padding: 32px 0 28px;
+    padding: 1em 0;
 }
 
 header nav {
@@ -72,7 +72,7 @@ header nav {
 }
 
 header nav>a {
-    font-size: 18px;
+    /* font-size: 18px; */
     font-weight: bold;
     margin-left: 12px;
     text-decoration: none;
@@ -84,16 +84,19 @@ a:visited {
 
 nav div#logo a {
     float: left;
-    font-size: 18px;
+    /* font-size: 18px; */
     font-weight: bold;
     text-decoration: none;
 }
 
 footer {
-    border-top: solid 2px black;
-    color: #555;
-    font-size: 12px;
+    border-top: 2px solid var(--font-color-default);
+    font-size: 0.7rem;
     margin-top: 30px;
+}
+
+footer p {
+    margin-top: 0.6em;
 }
 
 p#cc-info {
@@ -105,20 +108,20 @@ p#hakyll {
 }
 
 h1 {
-    font-size: 24px;
+    font-size: 1.6rem;
 }
 
 h2 {
-    font-size: 20px;
+    font-size: 1.3rem;
 }
 
 h3 {
-    font-size: 18px;
+    font-size: 1.1rem;
 }
 
 div.info {
     color: #555;
-    font-size: 14px;
+    font-size: 1rem;
     font-style: italic;
 }
 
@@ -137,12 +140,8 @@ img {
 figure {
     text-align: center;
     display: table;
-    max-width: 60%;
-
-    /* demo; set some amount (px or %) if you can */
-    margin: 10px auto;
-
-    /* not needed unless you want centered */
+    max-width: 80%;
+    margin: 1.4em auto;
 }
 
 figcaption {
@@ -164,4 +163,28 @@ div.warn-draft {
 div.warn-draft > p {
     margin-top: 0;
     margin-bottom: 0;
+}
+
+pre, code {
+    font-size: 1rem;
+}
+
+pre {
+    padding: 0.1em 0.25em;
+}
+
+pre code {
+    display: block;
+    overflow-x: auto;
+    padding: 0.3em 0.7em;
+}
+
+blockquote {
+    margin: 1.4em 0;
+}
+
+blockquote p {
+	font-style: italic;
+    padding: var(--base-size-8) var(--base-size-16);
+    border-left: .25em solid var(--border-color-default, var(--font-color-default));
 }
