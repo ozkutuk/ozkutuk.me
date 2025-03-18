@@ -112,16 +112,8 @@ Just 1
 -- optics
 >>> preview pairs [(1, 2), (3, 4), (5, 6)]
 
-<interactive>:21:1: error: [GHC-64725]
+<interactive>:1:1: error: [GHC-64725]
     • A_Traversal cannot be used as An_AffineFold
-      Perhaps you meant one of these:
-        ‘traverseOf’ (from Optics.Traversal)
-        ‘traverseOf_’ (from Optics.Fold)
-        ‘foldMapOf’ (from Optics.Fold)
-        ‘toListOf’ (from Optics.Fold)
-        ‘over’ (from Optics.Setter)
-        ‘set’ (from Optics.Setter)
-        ‘(^..)’ ‘(%~)’ ‘(.~)’ (from Optics.Operators)
 ```
 
 The difference is abundantly clear: `optics` code does not typecheck since a
