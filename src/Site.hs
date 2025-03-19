@@ -5,11 +5,11 @@ import Control.Monad (filterM, (>=>))
 import Data.Foldable (for_)
 import Hakyll
 import System.FilePath qualified as File
+import Text.Pandoc.Highlighting qualified as Pandoc
 import Text.Pandoc.Options (
   HTMLMathMethod (..),
   WriterOptions (..),
  )
-import Text.Pandoc.Highlighting qualified as Pandoc
 
 pandocCodeStyle :: Pandoc.Style
 pandocCodeStyle = Pandoc.kate
@@ -21,6 +21,9 @@ hakyllWriterOptions =
     , writerHighlightStyle = Just pandocCodeStyle
     }
 
+blogRoot :: String
+blogRoot = "https://ozkutuk.me"
+
 feed :: FeedConfiguration
 feed =
   FeedConfiguration
@@ -28,7 +31,7 @@ feed =
     , feedDescription = "ozkutuk's blog"
     , feedAuthorName = "Berk Özkütük"
     , feedAuthorEmail = ""
-    , feedRoot = "https://ozkutuk.me"
+    , feedRoot = blogRoot
     }
 
 config :: Configuration
@@ -54,8 +57,8 @@ main = hakyllWith config $ do
     compile $
       pandocCompilerWith defaultHakyllReaderOptions hakyllWriterOptions
         >>= saveSnapshot "content"
-        >>= loadAndApplyTemplate "templates/post.html" postCtx
-        >>= loadAndApplyTemplate "templates/default.html" postCtx
+        >>= loadAndApplyTemplate "templates/post.html" postContext
+        >>= loadAndApplyTemplate "templates/default.html" postContext
         >>= relativizeUrls
 
   matchMetadata "posts/*" isDraft $ do
@@ -63,8 +66,8 @@ main = hakyllWith config $ do
     compile $
       pandocCompilerWith defaultHakyllReaderOptions hakyllWriterOptions
         >>= saveSnapshot "content"
-        >>= loadAndApplyTemplate "templates/post.html" postCtx
-        >>= loadAndApplyTemplate "templates/default.html" postCtx
+        >>= loadAndApplyTemplate "templates/post.html" postContext
+        >>= loadAndApplyTemplate "templates/default.html" postContext
         >>= relativizeUrls
 
   match "about.md" $ do
@@ -79,7 +82,7 @@ main = hakyllWith config $ do
     compile $ do
       publishedPosts <- recentFirst =<< filterPublished =<< loadAll "posts/*"
       let indexCtx =
-            listField "posts" postCtx (pure publishedPosts)
+            listField "posts" context (pure publishedPosts)
               <> constField "title" "Home"
               <> defaultContext
 
@@ -121,7 +124,7 @@ createFeeds = for_ feedRoutes $ \(path, feed') ->
 
 feedCompiler :: FeedRenderer -> Compiler (Item String)
 feedCompiler renderer = do
-  let feedCtx = postCtx <> bodyField "description"
+  let feedCtx = context <> bodyField "description"
   posts <- fmap (take 10) . recentFirst =<< filterPublished =<< loadAllSnapshots "posts/*" "content"
   renderer feed feedCtx posts
 
@@ -144,9 +147,13 @@ boolField' name f =
 isDraftField :: Context String
 isDraftField = boolField' "isDraft" (fmap isDraft . getMetadata . itemIdentifier)
 
-postCtx :: Context String
-postCtx =
+context :: Context String
+context =
   dateField "date" "%B %e, %Y"
     <> dateField "dateMachine" "%Y-%m-%d"
     <> isDraftField
+    <> constField "root" blogRoot
     <> defaultContext
+
+postContext :: Context String
+postContext = openGraphField "opengraph" context <> context

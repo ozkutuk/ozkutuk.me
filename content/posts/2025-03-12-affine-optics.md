@@ -3,6 +3,8 @@ layout: post
 title:  "In praise of affine optics"
 date:   2025-03-20 12:00:00 +0300
 categories: haskell
+og-description: A short post explaining affine optics and their advantages
+                compared to their regular counterparts (in certain use cases)
 ---
 
 Recently at work, I was tasked with picking a suitable optics library for our
