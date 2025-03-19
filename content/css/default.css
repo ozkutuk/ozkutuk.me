@@ -22,7 +22,7 @@ body {
 html {
     color: var(--font-color-default);
     background-color: var(--bg-color-default);
-    font-family: 'PT Serif', serif;
+    font-family: var(--serif-fonts);
 }
 
 #page-content {
@@ -171,6 +171,7 @@ div.warn-draft > p {
 
 pre, code {
     font-size: 1rem;
+    font-family: var(--monospace-fonts);
 }
 
 pre {

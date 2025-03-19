@@ -1,0 +1,61 @@
+@charset "UTF-8";
+:root {
+  --serif-fonts: "PT Serif", serif;
+  --monospace-fonts: "Iosevka", monospace;
+}
+
+@font-face {
+	font-family: 'Iosevka';
+	font-display: swap;
+	font-weight: normal;
+	font-stretch: normal;
+	font-style: normal;
+	src: url('fonts/Iosevka-Regular.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Iosevka';
+	font-display: swap;
+	font-weight: normal;
+	font-stretch: normal;
+	font-style: italic;
+	src: url('fonts/Iosevka-Italic.woff2') format('woff2');
+}
+
+@font-face {
+	font-family: 'Iosevka';
+	font-display: swap;
+	font-weight: bold;
+	font-stretch: normal;
+	font-style: normal;
+	src: url('fonts/Iosevka-Bold.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'PT Serif';
+    src: url('fonts/PTSerif-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'PT Serif';
+    src: url('fonts/PTSerif-Bold.woff') format('woff');
+    font-weight: bold;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: 'PT Serif';
+    src: url('fonts/PTSerif-Italic.woff') format('woff');
+    font-weight: normal;
+    font-style: italic;
+}
+
+@font-face {
+    font-family: 'PT Serif';
+    src: url('fonts/PTSerif-BoldItalic.woff') format('woff');
+    font-weight: bold;
+    font-style: italic;
+}
+
