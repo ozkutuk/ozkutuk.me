@@ -21,4 +21,7 @@ executable ozkutuk-blog
     , base    >=4.11 && <5
     , hakyll
     , pandoc
+    , pandoc-types
     , filepath
+    , text
+    , process

@@ -90,6 +90,8 @@
               p.beautifulsoup4
             ]))
 
+            pkgs.deno
+
             pkgs.alejandra
             pkgs.nil
             pkgs.just

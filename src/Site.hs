@@ -1,15 +1,23 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ViewPatterns #-}
 
 import Control.Monad (filterM, (>=>))
 import Data.Foldable (for_)
+import Data.Text (Text)
+import Data.Text qualified as T
+import Data.Text.IO qualified as T
 import Hakyll
 import System.FilePath qualified as File
+import System.IO (BufferMode (..), Handle, hSetBuffering)
+import System.Process qualified as Process
+import Text.Pandoc qualified as Pandoc
 import Text.Pandoc.Highlighting qualified as Pandoc
 import Text.Pandoc.Options (
   HTMLMathMethod (..),
   WriterOptions (..),
  )
+import Text.Pandoc.Walk qualified as Pandoc
 
 pandocCodeStyle :: Pandoc.Style
 pandocCodeStyle = Pandoc.kate
@@ -63,7 +71,7 @@ main = hakyllWith config $ do
   matchMetadata "posts/*" isPublished $ do
     route $ setExtension "html"
     compile $
-      pandocCompilerWith defaultHakyllReaderOptions hakyllWriterOptions
+      pandocCompiler'
         >>= saveSnapshot "content"
         >>= loadAndApplyTemplate "templates/post.html" postContext
         >>= loadAndApplyTemplate "templates/default.html" postContext
@@ -72,7 +80,7 @@ main = hakyllWith config $ do
   matchMetadata "posts/*" isDraft $ do
     route . customRoute $ makeDraftUrl
     compile $
-      pandocCompilerWith defaultHakyllReaderOptions hakyllWriterOptions
+      pandocCompiler'
         >>= saveSnapshot "content"
         >>= loadAndApplyTemplate "templates/post.html" postContext
         >>= loadAndApplyTemplate "templates/default.html" postContext
@@ -81,7 +89,7 @@ main = hakyllWith config $ do
   match "about.md" $ do
     route $ setExtension "html"
     compile $
-      pandocCompiler
+      pandocCompiler'
         >>= loadAndApplyTemplate "templates/default.html" defaultContext
         >>= relativizeUrls
 
@@ -168,3 +176,37 @@ postContext :: Context String
 postContext =
   openGraphField "opengraph" context
     <> context
+
+-- Adapted from: https://tony-zorman.com/posts/katex-with-hakyll.html
+hlKaTeX :: Pandoc.Pandoc -> Compiler Pandoc.Pandoc
+hlKaTeX pandoc = recompilingUnsafeCompiler $ do
+  (hin, hout, _, _) <- Process.runInteractiveCommand "deno run scripts/math.ts"
+  hSetBuffering hin NoBuffering
+  hSetBuffering hout NoBuffering
+
+  (`Pandoc.walkM` pandoc) $ \case
+    Pandoc.Math mathType (T.unwords . T.lines . T.strip -> text) -> do
+      let math :: Text = case mathType of
+            Pandoc.DisplayMath -> ":DISPLAY " <> text
+            Pandoc.InlineMath -> text
+
+      T.hPutStrLn hin math
+      Pandoc.RawInline "html" <$> getResponse hout
+    block -> pure block
+  where
+    -- KaTeX might sent the input back as multiple lines if it involves a
+    -- matrix of coordinates. The big assumption here is that it does so only
+    -- when matrices—or other such constructs—are involved, and not when it
+    -- sends back "normal" HTML.
+    getResponse :: Handle -> IO Text
+    getResponse handle = go ""
+      where
+        go :: Text -> IO Text
+        go !str = do
+          more <- (str <>) <$> T.hGetLine handle
+          if ">" `T.isSuffixOf` more -- end of HTML snippet
+            then pure more
+            else go more
+
+pandocCompiler' :: Compiler (Item String)
+pandocCompiler' = pandocCompilerWithTransformM defaultHakyllReaderOptions hakyllWriterOptions hlKaTeX
