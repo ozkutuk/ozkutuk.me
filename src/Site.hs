@@ -161,7 +161,10 @@ context =
     <> dateField "dateMachine" "%Y-%m-%d"
     <> isDraftField
     <> constField "root" blogRoot
+    <> constField "og-image" "https://www.libravatar.org/avatar/cb5ae1412b8866d55b8a957468696797?s=200"
     <> defaultContext
 
 postContext :: Context String
-postContext = openGraphField "opengraph" context <> context
+postContext =
+  openGraphField "opengraph" context
+    <> context
