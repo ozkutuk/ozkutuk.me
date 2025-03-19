@@ -83,6 +83,13 @@
             haskell-language-server
             fourmolu
 
+            (pkgs.python3.withPackages (p: [
+              # Compressing fonts.
+              p.brotli
+              p.fonttools
+              p.beautifulsoup4
+            ]))
+
             pkgs.alejandra
             pkgs.nil
             pkgs.just
