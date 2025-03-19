@@ -39,9 +39,17 @@ config = defaultConfiguration {providerDirectory = "content"}
 
 main :: IO ()
 main = hakyllWith config $ do
-  match ("assets/*" .||. "CNAME" .||. "*.asc" .||. "css/fonts/**" .||. "robots.txt") $ do
-    route idRoute
-    compile copyFileCompiler
+  match
+    ( "assets/*"
+        .||. "CNAME"
+        .||. "*.asc"
+        .||. "css/fonts/**"
+        .||. "robots.txt"
+        .||. "favicon.png"
+    )
+    $ do
+      route idRoute
+      compile copyFileCompiler
 
   create ["css/syntax.css"] $ do
     route idRoute
