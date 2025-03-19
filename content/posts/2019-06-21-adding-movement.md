@@ -4,13 +4,14 @@ title:  "Raiden, Part III: Adding Movement"
 date:   2019-06-21 12:00:00 +0300
 categories: graphics
 ---
+
 After a slight detour from our raytracer to research a bit about ray marching, we are back again. This time we will be adding transformations and instancing to Raiden. We will talk in a lot more detail in their dedicated chapters, but just to give a brief idea of what we are about to do for those who are unfamiliar with the terminology:
 
 Transformations are pretty self-explanatory. We will be applying certain operations to our objects to "transform" them. We will cover translation, scaling and rotation. It is important to note that we will be doing these in such a way that we will _not_ be modifying the object geometry. We will be achieving the transformations with the help of our good ol' matrices. The benefits of not manipulating the object geometry directly  may not be too obvious for now, but it will be useful once we start implementing instancing.
 
 Instancing is method to save additional memory cost in the case where there exists duplicates of a single complex mesh in the scene. We call these duplicates, well... instances. I think it is safe to say that instancing is a space optimization. We will see how it works in its own section, but I think this explanation is enough for now to get going.
 
-### Transformations
+## Transformations
 If you were following closely, I mentioned that we will be making use of matrices to perform our transformations. But we don't have any matrix implementation in our project yet. After thinking for a while, I thought implementing a reliable math library with full matrix and vector support was too much work and decided to integrate [GLM][glm] into the project. GLM provides all the math stuff with a very similar interface to GLSL. Since it is designed with use in graphics work in mind, it has the common functionality we will need. With the integration of GLM, it was the time to say goodbye to `tinymath`. It was a small library we rolled on our own but served us well until this time. Actually, I had used GLM in my other side graphics projects which involved OpenGL stuff. I was familiar with its architecture and it was a pleasant experience to use, therefore I designed `tinymath` with an interface very similar to GLM. This resulted in a very smooth migration phase, which was mostly converting `tmath::vec3f` to `glm::vec3` and it was good to go.
 
 Now that we have our math library at our disposal, we can start to actually implement the transformation stuff. We hopefully need not worry about matrix calculations, GLM takes care of it with its convenient functions. There are only a few points we need to be careful about.
@@ -33,9 +34,9 @@ I rendered a few of the above with differing rotation angles to produce this ani
 
 I also rendered this scene of the so-called "killeroo", however there seems to be problem with refractive surfaces under transformation. I have yet to solve the issue. However transformations are correct:
 
-![Killeroo](/assets/killeroo_glass.png)
+![Killeroo](/assets/killeroo_glass.png)\
 
-#### Instancing
+### Instancing
 
 In the intro paragraph I have talked a bit about what instancing is. As I said, instancing is a way to save memory for the cases where there exists multiples of the same mesh. What I mean by the same mesh is, only the same geometry. The instances will most probably have a different position, orientation and it may have different materials. These are all okay. After all, the costly part for us is the object geometry, memory-wise.
 
@@ -45,8 +46,7 @@ This is all, really. To be honest I expected instancing would be a lot more work
 
 I don't have many scenes to show instancing. I constructed this one, where our bunny has a companion from now on:
 
-
-![Bunnies](/assets/bunny_mult.png)
+![Bunnies](/assets/bunny_mult.png)\
 
 The original bunny was first translated right, and scaled down. Then the instance of it was translated left and rotated around $y$-axis. The original transform matrix was also applied to the instance (hence it is also scaled down).
 
