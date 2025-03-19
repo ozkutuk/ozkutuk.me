@@ -40,27 +40,6 @@ html {
     color: #7A7052;
 }
 
-@media (width <= 70em) {
-    #page-content {
-        max-width: 60%;
-    }
-}
-
-@media (width <= 50em) {
-    #page-content {
-        max-width: 80%;
-    }
-
-    ul#posts {
-        margin: 0;
-        padding: 0;
-    }
-
-    .post>time {
-        display: none;
-    }
-}
-
 a {
     color: var(--font-color-default);
 }
@@ -192,4 +171,29 @@ blockquote p {
 	font-style: italic;
     padding: var(--base-size-8) var(--base-size-16);
     border-left: .25em solid var(--border-color-default, var(--font-color-default));
+}
+
+@media (width <= 80em) {
+    #page-content {
+        max-width: 70%;
+    }
+}
+
+@media (width <= 50em) {
+    #page-content {
+        max-width: 80%;
+    }
+
+    ul#posts {
+        margin: 0;
+        padding: 0;
+    }
+
+    .post>time {
+        display: none;
+    }
+
+    figure {
+        max-width: 100%;
+    }
 }
