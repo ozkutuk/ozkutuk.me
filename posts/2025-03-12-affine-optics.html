@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>ozkutuk's blog - In praise of affine optics</title>
+
+    <link rel="icon" href="../favicon.png">
+    <link rel="stylesheet" type="text/css" href="../css/fonts.css">
+    <link rel="stylesheet" type="text/css" href="../css/default.css">
+    <link rel="stylesheet" type="text/css" href="../css/syntax.css">
+    <link rel="stylesheet" type="text/css" href="../css/katex.css">
+
+    
+      <meta property="og:type" content="article" /><meta property="og:url" content="https://ozkutuk.me/posts/2025-03-12-affine-optics.html" /><meta property="og:title" content="In praise of affine optics" /><meta property="og:description" content="A short post explaining affine optics and their advantages compared to their regular counterparts (in certain use cases)" /><meta property="og:image" content="https://www.libravatar.org/avatar/cb5ae1412b8866d55b8a957468696797?s=200" />
+    
+</head>
+
+<body>
+    <div id="page-content">
+        <header>
+            <nav>
+                <div id="logo">
+                    <a href="../">ozkutuk's blog</a>
+                </div>
+                <a href="../about.html">about</a>
+            </nav>
+        </header>
+
+        <article>
+            <div class="info">
+    <h1>In praise of affine optics</h1>
+
+    Posted on <time datetime="2025-03-12">March 12, 2025</time>
+    
+</div>
+
+
+
+<article>
+    <p>Recently at work, I was tasked with picking a suitable optics library for our
+team to use. More specifically, a library that we could migrate to from
+<code>microlens</code>. In the end, we went with the <a href="https://hackage.haskell.org/package/optics"><code>optics</code></a> library. The
+reasons for the migration and what went into the decision process could be the
+topic of another blog post (one that I will hopefully write soon). However, in
+this short post, I will talk about one of the—in my opinion, undersold—features
+provided by the <code>optics</code> library: <em>affine optics</em>. Considering that affine optics
+do not exist in the <code>lens</code> library, one might assume that they are some obscure
+optics that exist solely for novelty’s sake. In this post I will try to
+convince you that, on the contrary, affine optics are very useful in
+practice and should be something that exists in any working Haskell
+programmer’s toolkit.</p>
+<p>The rest of this post assumes basic familiarity with optics, specifically folds
+and traversals. I will start with a <em>very</em> brief recap of what those are, but if
+you need a more complete introduction to optics in general, I can suggest
+<a href="https://hackage.haskell.org/package/lens-tutorial-1.0.5/docs/Control-Lens-Tutorial.html"><code>Control.Lens.Tutorial</code></a>.</p>
+<p>Finally, a disclaimer: for the sake of clarity, I took the liberty to simplify
+the type signatures of some <code>optics</code> definitions<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a>. However, if you want to
+see the original definitions, I have provided links to the respective sections
+of the documentation.</p>
+<h2 id="folds-and-traversals-a-short-recap">Folds and traversals, a short recap</h2>
+<p>In the documentation of <code>optics</code>, <a href="https://hackage.haskell.org/package/optics-core-0.4.1.1/docs/Optics-Fold.html#v:Fold"><code>Fold</code></a> is explained as follows:</p>
+<blockquote>
+<p>A <code>Fold S A</code> has the ability to extract some number of elements of type <code>A</code>
+from a container of type <code>S</code>.</p>
+</blockquote>
+<p>The “some number” of elements mentioned in the quote could be zero, one, or any
+other non-negative integer. That is, it can be conceptualized as retrieving a
+list of values. In fact, we can do exactly that by using the <a href="https://hackage.haskell.org/package/optics-core-0.4.1.1/docs/Optics-Fold.html#v:toListOf"><code>toListOf</code></a>
+eliminator:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- Given a Fold that focuses both elements of tuples in a list, </span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="op">:</span>t pairs</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="ot">pairs ::</span> <span class="dt">Fold</span> [(a, a)] a</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> toListOf pairs [(<span class="dv">1</span>, <span class="dv">2</span>), (<span class="dv">3</span>, <span class="dv">4</span>), (<span class="dv">5</span>, <span class="dv">6</span>)]</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>[<span class="dv">1</span>,<span class="dv">2</span>,<span class="dv">3</span>,<span class="dv">4</span>,<span class="dv">5</span>,<span class="dv">6</span>]</span></code></pre></div>
+<p><a href="https://hackage.haskell.org/package/optics-core-0.4.1.1/docs/Optics-Traversal.html"><code>Traversal</code></a> can be thought of as a <code>Fold</code> that can also be
+used to update the value of its foci. This implies that a <code>Traversal</code> can be
+used wherever a <code>Fold</code> is expected, but not vice versa. In fact, the <code>pairs</code>
+<code>Fold</code> we had in the previous code snippet (whose definition is of no
+importance) is actually a <code>Traversal</code>, so we can use it to, say, increment each
+focused element:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- I lied, &quot;pairs&quot; is actually a Traversal</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">-- (that can also serve as a Fold)</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="op">:</span>t pairs</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="ot">pairs ::</span> <span class="dt">Traversal'</span> [(a, a)] a</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> over pairs <span class="fu">succ</span> [(<span class="dv">1</span>, <span class="dv">2</span>), (<span class="dv">3</span>, <span class="dv">4</span>), (<span class="dv">5</span>, <span class="dv">6</span>)]</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>[(<span class="dv">2</span>,<span class="dv">3</span>),(<span class="dv">4</span>,<span class="dv">5</span>),(<span class="dv">6</span>,<span class="dv">7</span>)]</span></code></pre></div>
+<p>Now that we are done with the recap, let’s get to the meat of the post (I told
+the recap would be <em>very</em> brief, didn’t I?)</p>
+<h2 id="enter-affine-optics">Enter affine optics</h2>
+<p><code>Traversal</code> and <code>Fold</code> also have affine counterparts, aptly-named as
+<a href="https://hackage.haskell.org/package/optics-core-0.4.1.1/docs/Optics-AffineTraversal.html"><code>AffineTraversal</code></a> and <a href="https://hackage.haskell.org/package/optics-core-0.4.1.1/docs/Optics-AffineFold.html"><code>AffineFold</code></a>.
+Whereas a <code>Traversal</code><a href="#fn2" class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a> targets potentially zero, one, or multiple elements,
+an <code>AffineTraversal</code> can only target either zero or one element. Consequently,
+you can now use <a href="https://hackage.haskell.org/package/optics-core-0.4.1.1/docs/Optics-AffineFold.html#v:preview"><code>preview</code></a> to view the target value instead of <code>toListOf</code>:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- _head :: AffineTraversal' [a] a</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> preview _head [<span class="dv">1</span>, <span class="dv">2</span>, <span class="dv">3</span>]</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="dt">Just</span> <span class="dv">1</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> preview _head []</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="dt">Nothing</span></span></code></pre></div>
+<p>The difference might seem insignificant at first glance. However, I would argue
+that distinguishing affine optics from their regular counterparts is important
+for a few reasons.</p>
+<h3 id="affine-optics-are-a-natural-extension">Affine optics are a natural extension</h3>
+<p>As mentioned above, <code>Traversal</code> can focus many elements. Therefore, <code>Traversal</code>
+can be conceptualized as a list of values. That is, if you have a <code>Traversal' S A</code> at hand<a href="#fn3" class="footnote-ref" id="fnref3" role="doc-noteref"><sup>3</sup></a>, you can think of it as something that allows you to get a hold
+of an <code>[A]</code> given an <code>S</code>.</p>
+<p>If you can target a list of values through <code>Traversal</code>, how can you target an
+optional value (i.e. a <code>Maybe</code>)? That is exactly what <code>AffineTraversal</code> is for!
+Just like how lists are ubiquituous in Haskell, <code>Maybe</code> is also indispensable
+and ever-present in every Haskell codebase. Therefore, having an optic kind that
+perfectly matches this pattern is certainly quite useful.</p>
+<h3 id="affine-optics-provide-additional-type-safety">Affine optics provide additional type safety</h3>
+<p>One can read the previous point and think, “well, <code>lens</code> users have been doing
+without affine optics just fine”. Certainly, whatever <code>AffineTraversal</code>
+provides, one can do pretty much the same with <code>Traversal</code>, just as one can
+live without <code>Maybe</code> and just use singleton lists instead. Is that what we want
+though? As Haskell programmers, we enjoy the fact that we can model the problem
+domain precisely through the types. Preaching the motto “make illegal states
+unrepresentable”, we shouldn’t settle for a <code>Traversal</code> if we know that it
+could focus at most a single value anyway. <code>AffineTraversal</code> perfectly captures
+this notion.</p>
+<p>To put it in concrete terms, let’s try to <code>preview</code> a <code>Traversal</code> using both
+<code>lens</code> and <code>optics</code> libraries and contrast the result:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- lens</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> preview pairs [(<span class="dv">1</span>, <span class="dv">2</span>), (<span class="dv">3</span>, <span class="dv">4</span>), (<span class="dv">5</span>, <span class="dv">6</span>)]</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="dt">Just</span> <span class="dv">1</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co">-- optics</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> preview pairs [(<span class="dv">1</span>, <span class="dv">2</span>), (<span class="dv">3</span>, <span class="dv">4</span>), (<span class="dv">5</span>, <span class="dv">6</span>)]</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="op">&lt;</span>interactive<span class="op">&gt;:</span><span class="dv">1</span><span class="op">:</span><span class="dv">1</span><span class="op">:</span> <span class="fu">error</span><span class="op">:</span> [<span class="dt">GHC</span><span class="op">-</span><span class="dv">64725</span>]</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>    • <span class="dt">A_Traversal</span> cannot be used as <span class="dt">An_AffineFold</span></span></code></pre></div>
+<p>The difference is abundantly clear: <code>optics</code> code does not typecheck since a
+<code>Traversal</code> (or a <code>Fold</code> for that matter) cannot be used as an <code>AffineFold</code>,
+whereas <code>lens</code> happily accepts it by returning the first target and silently
+discarding the rest.</p>
+<p>Why is the <code>Traversal</code> being used as an <code>AffineFold</code> in the first place? Here
+is the type of <code>preview</code> from <code>optics</code>:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="ot">preview ::</span> <span class="dt">AffineFold</span> s a <span class="ot">-&gt;</span> s <span class="ot">-&gt;</span> <span class="dt">Maybe</span> a</span></code></pre></div>
+<p>As you can see, <code>preview</code> expects an <code>AffineFold</code>. It makes sense, since you are
+trying to extract a single value, if it exists. What if you want the behavior of
+<code>lens</code> though, i.e. you want to extract the first target of the <code>Fold</code>? In that
+case, you need to use a specialized combinator instead:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> headOf pairs [(<span class="dv">1</span>, <span class="dv">2</span>), (<span class="dv">3</span>, <span class="dv">4</span>), (<span class="dv">5</span>, <span class="dv">6</span>)]</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="dt">Just</span> <span class="dv">1</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">-- ...or you can turn &quot;pairs&quot; into an AffineFold that targets just</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">-- the first focus of the original Fold by using &quot;pre&quot;:</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> preview (pre pairs) [(<span class="dv">1</span>, <span class="dv">2</span>), (<span class="dv">3</span>, <span class="dv">4</span>), (<span class="dv">5</span>, <span class="dv">6</span>)]</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="dt">Just</span> <span class="dv">1</span></span></code></pre></div>
+<p>The point I am trying to get across is that <code>optics</code> (through making
+<code>AffineTraversal</code> a distinct optic) forces the developer to make an explicit
+decision on the behavior: you either use a <code>Fold</code> with <code>toListOf</code> to obtain a
+list of values, or you <em>explicitly</em> pick the first target of it (if you want to
+have the behavior <em>implicitly</em> provided by <code>lens</code>).</p>
+<h3 id="affine-optics-are-everywhere">Affine optics are everywhere</h3>
+<p>What about <code>Prism</code>s? They also can capture the notion of a single optional
+value, right? Well, yes, but conceptually <code>Prism</code> generalizes the notion of a
+constructor. This means that to be able to create a <code>Prism</code>, one also has to
+provide a way to construct the “bigger” type from the “smaller” one. This makes
+<code>Prism</code>s much less generally useful compared to <code>AffineTraversal</code>s.</p>
+<p>In contrast, once I started using the <code>optics</code> library, I have started to notice
+affine optics everywhere. In hindsight, this is not a surprising result. Below
+is the subtyping relation between the optic kinds:</p>
+<figure>
+<img src="https://hackage.haskell.org/package/optics-0.4.2/docs/diagrams/optics.png" alt="Subtyping hierarchy of optics" />
+<figcaption aria-hidden="true">Subtyping hierarchy of optics</figcaption>
+</figure>
+<p>Notice the arrows going into <code>AffineTraversal</code> from <code>Lens</code> and <code>Prism</code>. This
+means that both <code>Lens</code> and <code>Prism</code> can be used as <code>AffineTraversal</code>. A direct
+implication of this is that you obtain an <code>AffineTraversal</code> if you compose a
+<code>Lens</code> and a <code>Prism</code>. This <code>Lens</code>-<code>Prism</code> composition is very common in business
+code that have lots of different record types modelling the problem domain.
+Ignoring my lack of creativity for a moment, let’s take a look into this example
+featuring the <code>Animal</code> type:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">Animal</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="ot">=</span> <span class="dt">Dog</span> <span class="dt">String</span> <span class="dt">DogBreed</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="op">|</span> <span class="dt">Cat</span> <span class="dt">String</span> <span class="dt">CatBreed</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="kw">data</span> <span class="dt">DogBreed</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a> <span class="ot">=</span> <span class="dt">Bulldog</span></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a> <span class="op">|</span> <span class="dt">Pomeranian</span></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a> <span class="op">|</span> <span class="dt">Other</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a><span class="co">-- data CatBreed = ...</span></span></code></pre></div>
+<p>Then, the breed of a dog could be targeted like this<a href="#fn4" class="footnote-ref" id="fnref4" role="doc-noteref"><sup>4</sup></a>:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode haskell"><code class="sourceCode haskell"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> <span class="kw">let</span> myDog <span class="ot">=</span> <span class="dt">Dog</span> <span class="st">&quot;Missile&quot;</span> <span class="dt">Pomeranian</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co">-- #_Dog :: Prism' Animal (String, DogBreed)</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">-- _2    :: Lens' (a, b) b</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> preview (<span class="op">#</span>_Dog <span class="op">%</span> _2) myDog</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="dt">Just</span> <span class="dt">Pomeranian</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co">-- can also be used for updates</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="op">&gt;&gt;&gt;</span> set (<span class="op">#</span>_Dog <span class="op">%</span> _2) <span class="dt">Bulldog</span> myDog</span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a><span class="dt">Dog</span> <span class="st">&quot;Missile&quot;</span> <span class="dt">Bulldog</span></span></code></pre></div>
+<p>The optic used here is an <code>AffineTraversal</code>, because it is the composition of
+<code>#_Dog</code> (which is a <code>Prism</code>) and <code>_2</code> (which is a <code>Lens</code>). You simply cannot
+get by with a <code>Prism</code> here, because there is no general way to construct an
+<code>Animal</code> given a <code>DogBreed</code>: what would the name of the dog be in such a
+construction?</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>Hopefully, this short post was enough to share my enthusiasm of affine optics. I
+have been a happy <code>optics</code> user for a multitude of reasons, but I consider the
+existence of affine optics to be one of the most prominent ones. If you are
+looking for an optics library for your next project, consider giving <code>optics</code> a
+go! Maybe you will enjoy using affine optics as much as I do.</p>
+<section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes">
+<hr />
+<ol>
+<li id="fn1"><p>Most notably, I have substituted some of the types with concrete optics
+which in actuality are polymorphic types constrained by the <a href="https://hackage.haskell.org/package/optics-core-0.4.1.1/docs/Optics-Optic.html#t:Is"><code>Is</code></a>
+typeclass. This typeclass captures the subtyping relation between kinds of
+optics, hence allows one to, say, pass a <code>Lens</code> where a <code>Traversal</code> is
+expected.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn2"><p>And likewise, a <code>Fold</code>. For the rest of this post, I will only talk about
+<code>Traversal</code>s unless the distinction between a <code>Fold</code> and <code>Traversal</code> matters
+for the point at hand.<a href="#fnref2" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn3"><p>If you are not too familiar with the optics libraries, the “'” suffix
+means that the <code>Traversal</code> is a “simple” one, i.e. one that is not
+type-changing. The difference is not important for the purposes of this
+post.<a href="#fnref3" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn4"><p>This example makes use of the label optics derived through <code>Generic</code>, but
+handwritten optics would work just as well. See the
+<a href="https://hackage.haskell.org/package/optics-core-0.4.1/docs/Optics-Label.html"><code>Optics.Label</code></a> module if you want to follow along.<a href="#fnref4" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</article>
+
+        </article>
+        <footer>
+            <p id="cc-info">The content on this blog is licensed under
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+            </p>
+            <p id="hakyll"> Site proudly generated by
+              <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+            </p>
+        </footer>
+    </div>
+</body>
+
+</html>
