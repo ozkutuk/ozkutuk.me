@@ -1,0 +1,73 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
+import { concat } from "../bytes/concat.ts";
+import { DEFAULT_CHUNK_SIZE } from "./_constants.ts";
+import type { Reader, ReaderSync } from "./types.ts";
+
+/**
+ * Read {@linkcode Reader} `r` until EOF (`null`) and resolve to the content as
+ * {@linkcode Uint8Array}.
+ *
+ * @example
+ * ```ts
+ * import { readAll } from "https://deno.land/std@$STD_VERSION/io/read_all.ts";
+ *
+ * // Example from stdin
+ * const stdinContent = await readAll(Deno.stdin);
+ *
+ * // Example from file
+ * using file = await Deno.open("my_file.txt", {read: true});
+ * const myFileContent = await readAll(file);
+ * ```
+ */
+export async function readAll(reader: Reader): Promise<Uint8Array> {
+  const chunks: Uint8Array[] = [];
+  while (true) {
+    let chunk = new Uint8Array(DEFAULT_CHUNK_SIZE);
+    const n = await reader.read(chunk);
+    if (n === null) {
+      break;
+    }
+    if (n < DEFAULT_CHUNK_SIZE) {
+      chunk = chunk.subarray(0, n);
+    }
+    chunks.push(chunk);
+  }
+  return concat(chunks);
+}
+
+/**
+ * Synchronously reads {@linkcode ReaderSync} `r` until EOF (`null`) and returns
+ * the content as {@linkcode Uint8Array}.
+ *
+ * @example
+ * ```ts
+ * import { readAllSync } from "https://deno.land/std@$STD_VERSION/io/read_all.ts";
+ *
+ * // Example from stdin
+ * const stdinContent = readAllSync(Deno.stdin);
+ *
+ * // Example from file
+ * using file = Deno.openSync("my_file.txt", {read: true});
+ * const myFileContent = readAllSync(file);
+ * ```
+ */
+export function readAllSync(reader: ReaderSync): Uint8Array {
+  const chunks: Uint8Array[] = [];
+  while (true) {
+    const chunk = new Uint8Array(DEFAULT_CHUNK_SIZE);
+    const n = reader.readSync(chunk);
+    if (n === null) {
+      break;
+    }
+    if (n < DEFAULT_CHUNK_SIZE) {
+      chunks.push(chunk.subarray(0, n));
+      break;
+    }
+    chunks.push(chunk);
+  }
+  return concat(chunks);
+}
+
+// denoCacheMetadata={"headers":{"x-frame-options":"DENY","content-length":"1944","cross-origin-opener-policy":"same-origin","strict-transport-security":"max-age=63072000; includeSubDomains; preload","via":"http/2 edgeproxy-h","age":"3643443","cross-origin-embedder-policy":"same-origin","access-control-allow-origin":"*","content-security-policy":"default-src 'none'; style-src 'unsafe-inline'; sandbox","etag":"\"2d728171bf712e5df20a639dcad9829b\"","server":"deno/gcp-europe-west3","cache-control":"public, max-age=31536000, immutable","last-modified":"Thu, 25 Apr 2024 03:01:09 GMT","cross-origin-resource-policy":"same-origin","server-timing":"fetchSource;dur=14","referrer-policy":"strict-origin-when-cross-origin","content-type":"application/typescript; charset=utf-8","x-amz-cf-id":"M1kAEIilZzQfeZscjHhYPAlgClwVgunyE1uir72fhVQnSdiziy6IyQ==","x-amz-cf-pop":"FRA56-P5","date":"Thu, 06 Feb 2025 07:32:01 GMT","x-amz-server-side-encryption":"AES256","x-amz-version-id":"_t87IC6a_wsDgujnwMmJlcnkVG6FYwnt","x-amz-replication-status":"COMPLETED","accept-ranges":"bytes","x-cache":"Hit from cloudfront","x-content-type-options":"nosniff","vary":"Accept-Encoding, Origin"},"url":"https://deno.land/std@0.224.0/io/read_all.ts","time":1742470563}

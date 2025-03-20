@@ -1,0 +1,60 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
+import { writeAll } from "./write_all.ts";
+import type { Writer } from "./types.ts";
+import { isCloser } from "./_common.ts";
+
+/** Options for {@linkcode toWritableStream}. */
+export interface toWritableStreamOptions {
+  /**
+   * If the `writer` is also a `Closer`, automatically close the `writer`
+   * when the stream is closed, aborted, or a write error occurs.
+   *
+   * @default {true}
+   */
+  autoClose?: boolean;
+}
+
+/**
+ * Create a {@linkcode WritableStream} from a {@linkcode Writer}.
+ *
+ * @example
+ * ```ts
+ * import { toWritableStream } from "https://deno.land/std@$STD_VERSION/io/to_writable_stream.ts";
+ *
+ * const file = await Deno.open("./file.txt", { create: true, write: true });
+ * await ReadableStream.from("Hello World")
+ *   .pipeThrough(new TextEncoderStream())
+ *   .pipeTo(toWritableStream(file));
+ * ```
+ */
+export function toWritableStream(
+  writer: Writer,
+  { autoClose = true }: toWritableStreamOptions = {},
+): WritableStream<Uint8Array> {
+  return new WritableStream({
+    async write(chunk, controller) {
+      try {
+        await writeAll(writer, chunk);
+      } catch (e) {
+        controller.error(e);
+        if (isCloser(writer) && autoClose) {
+          writer.close();
+        }
+      }
+    },
+    close() {
+      if (isCloser(writer) && autoClose) {
+        writer.close();
+      }
+    },
+    abort() {
+      if (isCloser(writer) && autoClose) {
+        writer.close();
+      }
+    },
+  });
+}
+
+// denoCacheMetadata={"headers":{"content-security-policy":"default-src 'none'; style-src 'unsafe-inline'; sandbox","date":"Tue, 11 Feb 2025 02:14:41 GMT","cross-origin-opener-policy":"same-origin","last-modified":"Thu, 25 Apr 2024 03:01:09 GMT","cross-origin-embedder-policy":"same-origin","x-amz-cf-pop":"FRA56-P5","referrer-policy":"strict-origin-when-cross-origin","content-type":"application/typescript; charset=utf-8","x-amz-replication-status":"COMPLETED","strict-transport-security":"max-age=63072000; includeSubDomains; preload","x-cache":"Hit from cloudfront","x-content-type-options":"nosniff","server":"deno/gcp-europe-west3","via":"http/2 edgeproxy-h","etag":"\"0a4375f16696262281af5b25583f0643\"","x-frame-options":"DENY","content-length":"1548","server-timing":"fetchSource;dur=6","cross-origin-resource-policy":"same-origin","access-control-allow-origin":"*","x-amz-server-side-encryption":"AES256","vary":"Accept-Encoding, Origin","x-amz-cf-id":"j6DtKl_Rw04r9WlpaevBRhr0GTtbFcCUOLr4KOVoLkpEYErAs_q6Cw==","x-amz-version-id":"y5P8rVI9SXDkEBYkwya3wt_V3G74j6Jg","accept-ranges":"bytes","age":"3230483","cache-control":"public, max-age=31536000, immutable"},"url":"https://deno.land/std@0.224.0/io/to_writable_stream.ts","time":1742470563}

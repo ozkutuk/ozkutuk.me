@@ -1,0 +1,44 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
+import { Buffer } from "./buffer.ts";
+import { writeAll } from "./write_all.ts";
+import type { Reader } from "./types.ts";
+
+/**
+ * Create a {@linkcode Reader} from a {@linkcode ReadableStreamDefaultReader}.
+ *
+ * @example
+ * ```ts
+ * import { copy } from "https://deno.land/std@$STD_VERSION/io/copy.ts";
+ * import { readerFromStreamReader } from "https://deno.land/std@$STD_VERSION/io/reader_from_stream_reader.ts";
+ *
+ * const res = await fetch("https://deno.land");
+ * using file = await Deno.open("./deno.land.html", { create: true, write: true });
+ *
+ * const reader = readerFromStreamReader(res.body!.getReader());
+ * await copy(reader, file);
+ * ```
+ */
+export function readerFromStreamReader(
+  streamReader: ReadableStreamDefaultReader<Uint8Array>,
+): Reader {
+  const buffer = new Buffer();
+
+  return {
+    async read(p: Uint8Array): Promise<number | null> {
+      if (buffer.empty()) {
+        const res = await streamReader.read();
+        if (res.done) {
+          return null; // EOF
+        }
+
+        await writeAll(buffer, res.value);
+      }
+
+      return buffer.read(p);
+    },
+  };
+}
+
+// denoCacheMetadata={"headers":{"cross-origin-opener-policy":"same-origin","x-amz-cf-id":"jRlmnKQw1ZzOkyehr1jzcNgTMBl3lcK4frFrifespHfygGh-d7J24g==","x-amz-cf-pop":"FRA56-P5","x-amz-version-id":"PajEf.aFE68nvDMxaekWjFFoN7veNydm","x-cache":"Hit from cloudfront","cache-control":"public, max-age=31536000, immutable","content-length":"1217","x-content-type-options":"nosniff","date":"Sat, 08 Feb 2025 03:37:58 GMT","content-security-policy":"default-src 'none'; style-src 'unsafe-inline'; sandbox","x-amz-replication-status":"COMPLETED","strict-transport-security":"max-age=63072000; includeSubDomains; preload","x-amz-server-side-encryption":"AES256","accept-ranges":"bytes","cross-origin-resource-policy":"same-origin","server-timing":"fetchSource;dur=4","etag":"\"35c1332f0634d0bd0380ac8278ddb889\"","cross-origin-embedder-policy":"same-origin","age":"3484686","x-frame-options":"DENY","access-control-allow-origin":"*","last-modified":"Thu, 25 Apr 2024 03:01:09 GMT","server":"deno/gcp-europe-west3","referrer-policy":"strict-origin-when-cross-origin","vary":"Accept-Encoding, Origin","content-type":"application/typescript; charset=utf-8","via":"http/2 edgeproxy-h"},"url":"https://deno.land/std@0.224.0/io/reader_from_stream_reader.ts","time":1742470563}

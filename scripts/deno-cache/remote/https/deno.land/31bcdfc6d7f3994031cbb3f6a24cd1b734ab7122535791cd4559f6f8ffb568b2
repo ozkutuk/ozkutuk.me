@@ -1,0 +1,51 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
+/**
+ * Copy bytes from the source array to the destination array and returns the
+ * number of bytes copied.
+ *
+ * If the source array is larger than what the `dst` array can hold, only the
+ * amount of bytes that fit in the `dst` array are copied.
+ *
+ * @param src Source array to copy from.
+ * @param dst Destination array to copy to.
+ * @param offset Offset in the destination array to start copying to. Defaults
+ * to 0.
+ * @returns Number of bytes copied.
+ *
+ * @example Basic usage
+ * ```ts
+ * import { copy } from "https://deno.land/std@$STD_VERSION/bytes/copy.ts";
+ *
+ * const src = new Uint8Array([9, 8, 7]);
+ * const dst = new Uint8Array([0, 1, 2, 3, 4, 5]);
+ *
+ * copy(src, dst); // 3
+ * dst; // Uint8Array(6) [9, 8, 7, 3, 4, 5]
+ * ```
+ *
+ * @example Copy with offset
+ * ```ts
+ * import { copy } from "https://deno.land/std@$STD_VERSION/bytes/copy.ts";
+ *
+ * const src = new Uint8Array([1, 1, 1, 1]);
+ * const dst = new Uint8Array([0, 0, 0, 0]);
+ *
+ * copy(src, dst, 1); // 3
+ * dst; // Uint8Array(4) [0, 1, 1, 1]
+ * ```
+ * Defining an offset will start copying at the specified index in the
+ * destination array.
+ */
+export function copy(src: Uint8Array, dst: Uint8Array, offset = 0): number {
+  offset = Math.max(0, Math.min(offset, dst.byteLength));
+  const dstBytesAvailable = dst.byteLength - offset;
+  if (src.byteLength > dstBytesAvailable) {
+    src = src.subarray(0, dstBytesAvailable);
+  }
+  dst.set(src, offset);
+  return src.byteLength;
+}
+
+// denoCacheMetadata={"headers":{"age":"3492001","strict-transport-security":"max-age=63072000; includeSubDomains; preload","x-amz-cf-id":"CShzgRdFPFSEeA7Ae7DDY_Xkvt88rbL1m9zf7ZmP7fVytfrlzRdgnw==","content-length":"1575","access-control-allow-origin":"*","content-security-policy":"default-src 'none'; style-src 'unsafe-inline'; sandbox","x-amz-replication-status":"COMPLETED","cross-origin-opener-policy":"same-origin","server":"deno/gcp-europe-west3","via":"http/2 edgeproxy-h","date":"Sat, 08 Feb 2025 01:36:03 GMT","referrer-policy":"strict-origin-when-cross-origin","cross-origin-resource-policy":"same-origin","x-amz-server-side-encryption":"AES256","x-frame-options":"DENY","cache-control":"public, max-age=31536000, immutable","cross-origin-embedder-policy":"same-origin","last-modified":"Thu, 25 Apr 2024 03:01:08 GMT","accept-ranges":"bytes","server-timing":"fetchSource;dur=4","vary":"Accept-Encoding, Origin","x-amz-version-id":"fVVNaiqBErVRw44ZS_Sl1gn3XzMfKgdt","x-cache":"Hit from cloudfront","etag":"\"06055b6e2ae7313c44c626ee6528063a\"","x-amz-cf-pop":"FRA56-P5","x-content-type-options":"nosniff","content-type":"application/typescript; charset=utf-8"},"url":"https://deno.land/std@0.224.0/bytes/copy.ts","time":1742470563}

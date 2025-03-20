@@ -1,0 +1,22 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+import { readInt } from "./read_int.ts";
+const MAX_SAFE_INTEGER = BigInt(Number.MAX_SAFE_INTEGER);
+/**
+ * Read big endian 64bit long from BufReader
+ * @param buf
+ *
+ * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ */ export async function readLong(buf) {
+  const high = await readInt(buf);
+  if (high === null) return null;
+  const low = await readInt(buf);
+  if (low === null) throw new Deno.errors.UnexpectedEof();
+  const big = BigInt(high) << 32n | BigInt(low);
+  // We probably should provide a similar API that returns BigInt values.
+  if (big > MAX_SAFE_INTEGER) {
+    throw new RangeError("Long value too big to be represented as a JavaScript number.");
+  }
+  return Number(big);
+}
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImh0dHBzOi8vZGVuby5sYW5kL3N0ZEAwLjIyNC4wL2lvL3JlYWRfbG9uZy50cyJdLCJzb3VyY2VzQ29udGVudCI6WyIvLyBDb3B5cmlnaHQgMjAxOC0yMDI0IHRoZSBEZW5vIGF1dGhvcnMuIEFsbCByaWdodHMgcmVzZXJ2ZWQuIE1JVCBsaWNlbnNlLlxuXG5pbXBvcnQgdHlwZSB7IEJ1ZlJlYWRlciB9IGZyb20gXCIuL2J1Zl9yZWFkZXIudHNcIjtcbmltcG9ydCB7IHJlYWRJbnQgfSBmcm9tIFwiLi9yZWFkX2ludC50c1wiO1xuXG5jb25zdCBNQVhfU0FGRV9JTlRFR0VSID0gQmlnSW50KE51bWJlci5NQVhfU0FGRV9JTlRFR0VSKTtcblxuLyoqXG4gKiBSZWFkIGJpZyBlbmRpYW4gNjRiaXQgbG9uZyBmcm9tIEJ1ZlJlYWRlclxuICogQHBhcmFtIGJ1ZlxuICpcbiAqIEBkZXByZWNhdGVkIFRoaXMgd2lsbCBiZSByZW1vdmVkIGluIDEuMC4wLiBVc2UgdGhlIHtAbGluayBodHRwczovL2RldmVsb3Blci5tb3ppbGxhLm9yZy9lbi1VUy9kb2NzL1dlYi9BUEkvU3RyZWFtc19BUEkgfCBXZWIgU3RyZWFtcyBBUEl9IGluc3RlYWQuXG4gKi9cbmV4cG9ydCBhc3luYyBmdW5jdGlvbiByZWFkTG9uZyhidWY6IEJ1ZlJlYWRlcik6IFByb21pc2U8bnVtYmVyIHwgbnVsbD4ge1xuICBjb25zdCBoaWdoID0gYXdhaXQgcmVhZEludChidWYpO1xuICBpZiAoaGlnaCA9PT0gbnVsbCkgcmV0dXJuIG51bGw7XG4gIGNvbnN0IGxvdyA9IGF3YWl0IHJlYWRJbnQoYnVmKTtcbiAgaWYgKGxvdyA9PT0gbnVsbCkgdGhyb3cgbmV3IERlbm8uZXJyb3JzLlVuZXhwZWN0ZWRFb2YoKTtcbiAgY29uc3QgYmlnID0gKEJpZ0ludChoaWdoKSA8PCAzMm4pIHwgQmlnSW50KGxvdyk7XG4gIC8vIFdlIHByb2JhYmx5IHNob3VsZCBwcm92aWRlIGEgc2ltaWxhciBBUEkgdGhhdCByZXR1cm5zIEJpZ0ludCB2YWx1ZXMuXG4gIGlmIChiaWcgPiBNQVhfU0FGRV9JTlRFR0VSKSB7XG4gICAgdGhyb3cgbmV3IFJhbmdlRXJyb3IoXG4gICAgICBcIkxvbmcgdmFsdWUgdG9vIGJpZyB0byBiZSByZXByZXNlbnRlZCBhcyBhIEphdmFTY3JpcHQgbnVtYmVyLlwiLFxuICAgICk7XG4gIH1cbiAgcmV0dXJuIE51bWJlcihiaWcpO1xufVxuIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLDBFQUEwRTtBQUcxRSxTQUFTLE9BQU8sUUFBUSxnQkFBZ0I7QUFFeEMsTUFBTSxtQkFBbUIsT0FBTyxPQUFPLGdCQUFnQjtBQUV2RDs7Ozs7Q0FLQyxHQUNELE9BQU8sZUFBZSxTQUFTLEdBQWM7RUFDM0MsTUFBTSxPQUFPLE1BQU0sUUFBUTtFQUMzQixJQUFJLFNBQVMsTUFBTSxPQUFPO0VBQzFCLE1BQU0sTUFBTSxNQUFNLFFBQVE7RUFDMUIsSUFBSSxRQUFRLE1BQU0sTUFBTSxJQUFJLEtBQUssTUFBTSxDQUFDLGFBQWE7RUFDckQsTUFBTSxNQUFNLEFBQUMsT0FBTyxTQUFTLEdBQUcsR0FBSSxPQUFPO0VBQzNDLHVFQUF1RTtFQUN2RSxJQUFJLE1BQU0sa0JBQWtCO0lBQzFCLE1BQU0sSUFBSSxXQUNSO0VBRUo7RUFDQSxPQUFPLE9BQU87QUFDaEIifQ==
+// denoCacheMetadata=9530351369120648511,14723574916696199494

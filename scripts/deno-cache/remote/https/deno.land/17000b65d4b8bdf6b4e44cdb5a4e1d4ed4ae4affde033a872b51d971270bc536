@@ -1,0 +1,35 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
+/**
+ * Concatenate an array of byte slices into a single slice.
+ *
+ * @param buffers Array of byte slices to concatenate.
+ * @returns Hello
+ *
+ * @example Basic usage
+ * ```ts
+ * import { concat } from "https://deno.land/std@$STD_VERSION/bytes/concat.ts";
+ *
+ * const a = new Uint8Array([0, 1, 2]);
+ * const b = new Uint8Array([3, 4, 5]);
+ *
+ * concat([a, b]); // Uint8Array(6) [ 0, 1, 2, 3, 4, 5 ]
+ * ```
+ */
+export function concat(buffers: Uint8Array[]): Uint8Array {
+  let length = 0;
+  for (const buffer of buffers) {
+    length += buffer.length;
+  }
+  const output = new Uint8Array(length);
+  let index = 0;
+  for (const buffer of buffers) {
+    output.set(buffer, index);
+    index += buffer.length;
+  }
+
+  return output;
+}
+
+// denoCacheMetadata={"headers":{"content-length":"844","accept-ranges":"bytes","x-frame-options":"DENY","date":"Sat, 08 Feb 2025 01:35:40 GMT","strict-transport-security":"max-age=63072000; includeSubDomains; preload","vary":"Accept-Encoding, Origin","x-amz-cf-pop":"FRA56-P5","cross-origin-resource-policy":"same-origin","content-security-policy":"default-src 'none'; style-src 'unsafe-inline'; sandbox","content-type":"application/typescript; charset=utf-8","x-amz-replication-status":"COMPLETED","x-amz-version-id":"i2EEtAgeOWw3nBQvKUk.hB9NRaBPf7P.","x-cache":"Hit from cloudfront","x-content-type-options":"nosniff","cross-origin-opener-policy":"same-origin","cross-origin-embedder-policy":"same-origin","access-control-allow-origin":"*","referrer-policy":"strict-origin-when-cross-origin","server":"deno/gcp-europe-west3","etag":"\"fdac263ef0bf90ed1433031ded7e8fb5\"","server-timing":"fetchSource;dur=2","via":"http/2 edgeproxy-h","x-amz-server-side-encryption":"AES256","x-amz-cf-id":"II_MCnsuml8YY73RDhB4UPtcLFFYV-LbcbTf0eJfZbbbjQ7tEk11Zw==","last-modified":"Thu, 25 Apr 2024 03:01:08 GMT","age":"3492024","cache-control":"public, max-age=31536000, immutable"},"url":"https://deno.land/std@0.224.0/bytes/concat.ts","time":1742470563}

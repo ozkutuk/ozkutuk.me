@@ -4,13 +4,14 @@
 
 import Control.Monad (filterM, (>=>))
 import Data.Foldable (for_)
+import Data.Function ((&))
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.IO qualified as T
 import Hakyll
 import System.FilePath qualified as File
 import System.IO (BufferMode (..), Handle, hSetBuffering)
-import System.Process qualified as Process
+import System.Process.Typed qualified as Process
 import Text.Pandoc qualified as Pandoc
 import Text.Pandoc.Highlighting qualified as Pandoc
 import Text.Pandoc.Options (
@@ -18,6 +19,7 @@ import Text.Pandoc.Options (
   WriterOptions (..),
  )
 import Text.Pandoc.Walk qualified as Pandoc
+import qualified System.Environment as Env
 
 pandocCodeStyle :: Pandoc.Style
 pandocCodeStyle = Pandoc.kate
@@ -25,7 +27,7 @@ pandocCodeStyle = Pandoc.kate
 hakyllWriterOptions :: WriterOptions
 hakyllWriterOptions =
   defaultHakyllWriterOptions
-    { writerHTMLMathMethod = MathJax ""
+    { writerHTMLMathMethod = KaTeX ""
     , writerHighlightStyle = Just pandocCodeStyle
     }
 
@@ -180,19 +182,26 @@ postContext =
 -- Adapted from: https://tony-zorman.com/posts/katex-with-hakyll.html
 hlKaTeX :: Pandoc.Pandoc -> Compiler Pandoc.Pandoc
 hlKaTeX pandoc = recompilingUnsafeCompiler $ do
-  (hin, hout, _, _) <- Process.runInteractiveCommand "deno run scripts/math.ts"
-  hSetBuffering hin NoBuffering
-  hSetBuffering hout NoBuffering
+  env <- Env.getEnvironment
+  let env' = ("DENO_DIR", "scripts/deno-cache") : env
+  let script =
+        Process.shell "deno run --cached-only scripts/math.ts"
+          & Process.setStdin Process.createPipe
+          & Process.setStdout Process.createPipe
+          & Process.setEnv env'
+  Process.withProcessTerm script $ \p -> do
+    hSetBuffering (Process.getStdin p) NoBuffering
+    hSetBuffering (Process.getStdout p) NoBuffering
 
-  (`Pandoc.walkM` pandoc) $ \case
-    Pandoc.Math mathType (T.unwords . T.lines . T.strip -> text) -> do
-      let math :: Text = case mathType of
-            Pandoc.DisplayMath -> ":DISPLAY " <> text
-            Pandoc.InlineMath -> text
+    (`Pandoc.walkM` pandoc) $ \case
+      Pandoc.Math mathType (T.unwords . T.lines . T.strip -> text) -> do
+        let math :: Text = case mathType of
+              Pandoc.DisplayMath -> ":DISPLAY " <> text
+              Pandoc.InlineMath -> text
 
-      T.hPutStrLn hin math
-      Pandoc.RawInline "html" <$> getResponse hout
-    block -> pure block
+        T.hPutStrLn (Process.getStdin p) math
+        Pandoc.RawInline "html" <$> getResponse (Process.getStdout p)
+      block -> pure block
   where
     -- KaTeX might sent the input back as multiple lines if it involves a
     -- matrix of coordinates. The big assumption here is that it does so only

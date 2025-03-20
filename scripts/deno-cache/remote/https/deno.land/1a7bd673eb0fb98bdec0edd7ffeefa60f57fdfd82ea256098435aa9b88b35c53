@@ -1,0 +1,36 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
+/**
+ * A `LimitedReader` reads from `reader` but limits the amount of data returned to just `limit` bytes.
+ * Each call to `read` updates `limit` to reflect the new amount remaining.
+ * `read` returns `null` when `limit` <= `0` or
+ * when the underlying `reader` returns `null`.
+ */
+import type { Reader } from "./types.ts";
+
+/**
+ * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ */
+export class LimitedReader implements Reader {
+  constructor(public reader: Reader, public limit: number) {}
+
+  async read(p: Uint8Array): Promise<number | null> {
+    if (this.limit <= 0) {
+      return null;
+    }
+
+    if (p.length > this.limit) {
+      p = p.subarray(0, this.limit);
+    }
+    const n = await this.reader.read(p);
+    if (n === null) {
+      return null;
+    }
+
+    this.limit -= n;
+    return n;
+  }
+}
+
+// denoCacheMetadata={"headers":{"accept-ranges":"bytes","cross-origin-opener-policy":"same-origin","last-modified":"Thu, 25 Apr 2024 03:01:09 GMT","server":"deno/gcp-europe-west3","x-amz-cf-pop":"FRA56-P5","x-cache":"Hit from cloudfront","x-content-type-options":"nosniff","x-frame-options":"DENY","age":"3484685","content-type":"application/typescript; charset=utf-8","access-control-allow-origin":"*","etag":"\"12020fd13d89e99b0b7219e47f037f6e\"","strict-transport-security":"max-age=63072000; includeSubDomains; preload","cross-origin-embedder-policy":"same-origin","via":"http/2 edgeproxy-h","x-amz-replication-status":"COMPLETED","content-security-policy":"default-src 'none'; style-src 'unsafe-inline'; sandbox","referrer-policy":"strict-origin-when-cross-origin","x-amz-version-id":"engFPUEfkykJDWXt7dOQVlXeVz3bcfuc","date":"Sat, 08 Feb 2025 03:37:58 GMT","vary":"Accept-Encoding, Origin","server-timing":"fetchSource;dur=12","x-amz-server-side-encryption":"AES256","x-amz-cf-id":"AMMnS9Z5WtBcC4IyLewrfhUQYrvzsYWcKbBYb-9qK-Z-qnuRJ1Tnzw==","cache-control":"public, max-age=31536000, immutable","cross-origin-resource-policy":"same-origin","content-length":"1021"},"url":"https://deno.land/std@0.224.0/io/limited_reader.ts","time":1742470563}

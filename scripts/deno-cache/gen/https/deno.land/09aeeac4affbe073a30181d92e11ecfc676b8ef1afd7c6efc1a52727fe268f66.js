@@ -1,0 +1,15 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+/**
+ * Read big endian 16bit short from BufReader
+ * @param buf
+ *
+ * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ */ export async function readShort(buf) {
+  const high = await buf.readByte();
+  if (high === null) return null;
+  const low = await buf.readByte();
+  if (low === null) throw new Deno.errors.UnexpectedEof();
+  return high << 8 | low;
+}
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImh0dHBzOi8vZGVuby5sYW5kL3N0ZEAwLjIyNC4wL2lvL3JlYWRfc2hvcnQudHMiXSwic291cmNlc0NvbnRlbnQiOlsiLy8gQ29weXJpZ2h0IDIwMTgtMjAyNCB0aGUgRGVubyBhdXRob3JzLiBBbGwgcmlnaHRzIHJlc2VydmVkLiBNSVQgbGljZW5zZS5cblxuaW1wb3J0IHR5cGUgeyBCdWZSZWFkZXIgfSBmcm9tIFwiLi9idWZfcmVhZGVyLnRzXCI7XG5cbi8qKlxuICogUmVhZCBiaWcgZW5kaWFuIDE2Yml0IHNob3J0IGZyb20gQnVmUmVhZGVyXG4gKiBAcGFyYW0gYnVmXG4gKlxuICogQGRlcHJlY2F0ZWQgVGhpcyB3aWxsIGJlIHJlbW92ZWQgaW4gMS4wLjAuIFVzZSB0aGUge0BsaW5rIGh0dHBzOi8vZGV2ZWxvcGVyLm1vemlsbGEub3JnL2VuLVVTL2RvY3MvV2ViL0FQSS9TdHJlYW1zX0FQSSB8IFdlYiBTdHJlYW1zIEFQSX0gaW5zdGVhZC5cbiAqL1xuZXhwb3J0IGFzeW5jIGZ1bmN0aW9uIHJlYWRTaG9ydChidWY6IEJ1ZlJlYWRlcik6IFByb21pc2U8bnVtYmVyIHwgbnVsbD4ge1xuICBjb25zdCBoaWdoID0gYXdhaXQgYnVmLnJlYWRCeXRlKCk7XG4gIGlmIChoaWdoID09PSBudWxsKSByZXR1cm4gbnVsbDtcbiAgY29uc3QgbG93ID0gYXdhaXQgYnVmLnJlYWRCeXRlKCk7XG4gIGlmIChsb3cgPT09IG51bGwpIHRocm93IG5ldyBEZW5vLmVycm9ycy5VbmV4cGVjdGVkRW9mKCk7XG4gIHJldHVybiAoaGlnaCA8PCA4KSB8IGxvdztcbn1cbiJdLCJuYW1lcyI6W10sIm1hcHBpbmdzIjoiQUFBQSwwRUFBMEU7QUFJMUU7Ozs7O0NBS0MsR0FDRCxPQUFPLGVBQWUsVUFBVSxHQUFjO0VBQzVDLE1BQU0sT0FBTyxNQUFNLElBQUksUUFBUTtFQUMvQixJQUFJLFNBQVMsTUFBTSxPQUFPO0VBQzFCLE1BQU0sTUFBTSxNQUFNLElBQUksUUFBUTtFQUM5QixJQUFJLFFBQVEsTUFBTSxNQUFNLElBQUksS0FBSyxNQUFNLENBQUMsYUFBYTtFQUNyRCxPQUFPLEFBQUMsUUFBUSxJQUFLO0FBQ3ZCIn0=
+// denoCacheMetadata=5679412638858811667,2805704496061182962

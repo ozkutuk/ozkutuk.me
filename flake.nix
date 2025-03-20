@@ -53,6 +53,8 @@
             (pkgs.buildPlatform.libc == "glibc")
             "${pkgs.glibcLocales}/lib/locale/locale-archive";
 
+          nativeBuildInputs = [ pkgs.deno ];
+
           buildPhase = ''
             ${pkgs.haskell.lib.justStaticExecutables haskellPackages'.ozkutuk-blog}/bin/ozkutuk-blog build --verbose
           '';

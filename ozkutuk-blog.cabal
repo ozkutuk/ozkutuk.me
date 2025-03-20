@@ -24,4 +24,4 @@ executable ozkutuk-blog
     , pandoc-types
     , filepath
     , text
-    , process
+    , typed-process

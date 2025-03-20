@@ -1,0 +1,19 @@
+// Source: https://github.com/jgm/pandoc/issues/6651#issuecomment-1099727774
+import { readLines } from "https://deno.land/std@0.224.0/io/mod.ts";
+import katex from "https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.mjs";
+for await (const line of readLines(Deno.stdin)){
+  try {
+    let DISPLAY = ":DISPLAY ";
+    let useDisplay = line.startsWith(DISPLAY);
+    let cleanLine = useDisplay ? line.substring(DISPLAY.length) : line;
+    console.log(katex.renderToString(cleanLine, {
+      displayMode: useDisplay,
+      strict: "error",
+      throwOnError: true
+    }));
+  } catch (error) {
+    throw new Error(`Input: ${line}\n\nError: ${error}`);
+  }
+}
+//# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImZpbGU6Ly8vaG9tZS9vemt1dHVrL2Rldi9vemt1dHVrLm1lL3NjcmlwdHMvbWF0aC50cyJdLCJzb3VyY2VzQ29udGVudCI6WyIvLyBTb3VyY2U6IGh0dHBzOi8vZ2l0aHViLmNvbS9qZ20vcGFuZG9jL2lzc3Vlcy82NjUxI2lzc3VlY29tbWVudC0xMDk5NzI3Nzc0XG5cbmltcG9ydCB7IHJlYWRMaW5lcyB9IGZyb20gXCJodHRwczovL2Rlbm8ubGFuZC9zdGRAMC4yMjQuMC9pby9tb2QudHNcIjtcbmltcG9ydCBrYXRleCBmcm9tIFwiaHR0cHM6Ly9jZG4uanNkZWxpdnIubmV0L25wbS9rYXRleEAwLjE2LjExL2Rpc3Qva2F0ZXgubWpzXCI7XG5cbmZvciBhd2FpdCAoY29uc3QgbGluZSBvZiByZWFkTGluZXMoRGVuby5zdGRpbikpIHtcbiAgdHJ5IHtcbiAgICBsZXQgRElTUExBWSAgICA9IFwiOkRJU1BMQVkgXCI7XG4gICAgbGV0IHVzZURpc3BsYXkgPSBsaW5lLnN0YXJ0c1dpdGgoRElTUExBWSk7XG4gICAgbGV0IGNsZWFuTGluZSAgPSB1c2VEaXNwbGF5ID8gbGluZS5zdWJzdHJpbmcoRElTUExBWS5sZW5ndGgpIDogbGluZTtcbiAgICBjb25zb2xlLmxvZyhrYXRleC5yZW5kZXJUb1N0cmluZyhjbGVhbkxpbmUsIHtcbiAgICAgIGRpc3BsYXlNb2RlOiB1c2VEaXNwbGF5LFxuICAgICAgc3RyaWN0OiBcImVycm9yXCIsXG4gICAgICB0aHJvd09uRXJyb3I6IHRydWUsXG4gICAgfSkpO1xuICB9IGNhdGNoIChlcnJvcikge1xuICAgIHRocm93IG5ldyBFcnJvcihgSW5wdXQ6ICR7bGluZX1cXG5cXG5FcnJvcjogJHtlcnJvcn1gKTtcbiAgfVxufVxuIl0sIm5hbWVzIjpbXSwibWFwcGluZ3MiOiJBQUFBLDRFQUE0RTtBQUU1RSxTQUFTLFNBQVMsUUFBUSwwQ0FBMEM7QUFDcEUsT0FBTyxXQUFXLDREQUE0RDtBQUU5RSxXQUFXLE1BQU0sUUFBUSxVQUFVLEtBQUssS0FBSyxFQUFHO0VBQzlDLElBQUk7SUFDRixJQUFJLFVBQWE7SUFDakIsSUFBSSxhQUFhLEtBQUssVUFBVSxDQUFDO0lBQ2pDLElBQUksWUFBYSxhQUFhLEtBQUssU0FBUyxDQUFDLFFBQVEsTUFBTSxJQUFJO0lBQy9ELFFBQVEsR0FBRyxDQUFDLE1BQU0sY0FBYyxDQUFDLFdBQVc7TUFDMUMsYUFBYTtNQUNiLFFBQVE7TUFDUixjQUFjO0lBQ2hCO0VBQ0YsRUFBRSxPQUFPLE9BQU87SUFDZCxNQUFNLElBQUksTUFBTSxDQUFDLE9BQU8sRUFBRSxLQUFLLFdBQVcsRUFBRSxPQUFPO0VBQ3JEO0FBQ0YifQ==
+// denoCacheMetadata=8060100260359601824,14042769462137537669

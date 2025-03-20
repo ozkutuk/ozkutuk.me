@@ -1,0 +1,55 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
+import type { Writer, WriterSync } from "./types.ts";
+
+/**
+ * Write all the content of the array buffer (`arr`) to the writer (`w`).
+ *
+ * @example
+ * ```ts
+ * import { writeAll } from "https://deno.land/std@$STD_VERSION/io/write_all.ts";
+
+ * // Example writing to stdout
+ * let contentBytes = new TextEncoder().encode("Hello World");
+ * await writeAll(Deno.stdout, contentBytes);
+ *
+ * // Example writing to file
+ * contentBytes = new TextEncoder().encode("Hello World");
+ * using file = await Deno.open('test.file', {write: true});
+ * await writeAll(file, contentBytes);
+ * ```
+ */
+export async function writeAll(writer: Writer, data: Uint8Array) {
+  let nwritten = 0;
+  while (nwritten < data.length) {
+    nwritten += await writer.write(data.subarray(nwritten));
+  }
+}
+
+/**
+ * Synchronously write all the content of the array buffer (`arr`) to the
+ * writer (`w`).
+ *
+ * @example
+ * ```ts
+ * import { writeAllSync } from "https://deno.land/std@$STD_VERSION/io/write_all.ts";
+ *
+ * // Example writing to stdout
+ * let contentBytes = new TextEncoder().encode("Hello World");
+ * writeAllSync(Deno.stdout, contentBytes);
+ *
+ * // Example writing to file
+ * contentBytes = new TextEncoder().encode("Hello World");
+ * using file = Deno.openSync('test.file', {write: true});
+ * writeAllSync(file, contentBytes);
+ * ```
+ */
+export function writeAllSync(writer: WriterSync, data: Uint8Array) {
+  let nwritten = 0;
+  while (nwritten < data.length) {
+    nwritten += writer.writeSync(data.subarray(nwritten));
+  }
+}
+
+// denoCacheMetadata={"headers":{"x-cache":"Hit from cloudfront","accept-ranges":"bytes","x-frame-options":"DENY","x-amz-cf-id":"NqOAJYyr8emv7aNnN_OsBZHeQOtkUXNcR6DifMesPIYfKu4COwQwEA==","cross-origin-embedder-policy":"same-origin","content-type":"application/typescript; charset=utf-8","x-amz-replication-status":"COMPLETED","via":"http/2 edgeproxy-h","vary":"Accept-Encoding, Origin","x-amz-server-side-encryption":"AES256","last-modified":"Thu, 25 Apr 2024 03:01:09 GMT","etag":"\"1b711ca525e1fb0b8a47be70dfe7501b\"","strict-transport-security":"max-age=63072000; includeSubDomains; preload","x-amz-cf-pop":"FRA56-P5","x-amz-version-id":"5O2SmMrAgDElXNOcRfgD2Gkwgw9OYFkb","referrer-policy":"strict-origin-when-cross-origin","cross-origin-resource-policy":"same-origin","date":"Tue, 04 Feb 2025 19:26:01 GMT","server-timing":"fetchSource;dur=10","server":"deno/gcp-europe-west3","x-content-type-options":"nosniff","cross-origin-opener-policy":"same-origin","content-length":"1623","content-security-policy":"default-src 'none'; style-src 'unsafe-inline'; sandbox","access-control-allow-origin":"*","age":"3773402","cache-control":"public, max-age=31536000, immutable"},"url":"https://deno.land/std@0.224.0/io/write_all.ts","time":1742470563}

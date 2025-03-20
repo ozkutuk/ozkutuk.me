@@ -1,0 +1,37 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+
+/**
+ * Utilities for working with Deno's readers, writers, and web streams.
+ *
+ * `Reader` and `Writer` interfaces are deprecated in Deno, and so many of these
+ * utilities are also deprecated. Consider using web streams instead.
+ *
+ * @module
+ */
+
+export * from "./buf_reader.ts";
+export * from "./buf_writer.ts";
+export * from "./buffer.ts";
+export * from "./copy.ts";
+export * from "./copy_n.ts";
+export * from "./iterate_reader.ts";
+export * from "./limited_reader.ts";
+export * from "./multi_reader.ts";
+export * from "./read_all.ts";
+export * from "./read_delim.ts";
+export * from "./read_int.ts";
+export * from "./read_lines.ts";
+export * from "./read_long.ts";
+export * from "./read_range.ts";
+export * from "./read_short.ts";
+export * from "./read_string_delim.ts";
+export * from "./reader_from_stream_reader.ts";
+export * from "./slice_long_to_bytes.ts";
+export * from "./string_reader.ts";
+export * from "./string_writer.ts";
+export * from "./to_readable_stream.ts";
+export * from "./to_writable_stream.ts";
+export * from "./types.ts";
+export * from "./write_all.ts";
+
+// denoCacheMetadata={"headers":{"etag":"\"722c14ed5a2f5db91a651803b63aa00d\"","vary":"Accept-Encoding, Origin","via":"http/2 edgeproxy-h","x-amz-cf-id":"OxAMlF-k-cz0A156UHjAcqtnAjK5g4CXY1SzSkm56bWxXL4u4CZUOw==","last-modified":"Thu, 25 Apr 2024 03:01:09 GMT","content-security-policy":"default-src 'none'; style-src 'unsafe-inline'; sandbox","server-timing":"fetchSource;dur=2","access-control-allow-origin":"*","age":"3645130","content-type":"application/typescript; charset=utf-8","accept-ranges":"bytes","cross-origin-resource-policy":"same-origin","server":"deno/gcp-europe-west3","x-amz-cf-pop":"FRA56-P5","x-amz-replication-status":"COMPLETED","x-amz-server-side-encryption":"AES256","cross-origin-opener-policy":"same-origin","x-content-type-options":"nosniff","referrer-policy":"strict-origin-when-cross-origin","content-length":"1155","cross-origin-embedder-policy":"same-origin","x-cache":"Hit from cloudfront","cache-control":"public, max-age=31536000, immutable","x-frame-options":"DENY","x-amz-version-id":"vENpxpgOT8SEVltQ2tnIeogaSpv38ziw","strict-transport-security":"max-age=63072000; includeSubDomains; preload","date":"Thu, 06 Feb 2025 07:03:54 GMT"},"url":"https://deno.land/std@0.224.0/io/mod.ts","time":1742470563}

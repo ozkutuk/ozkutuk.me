@@ -1,0 +1,31 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
+import type { Reader } from "./types.ts";
+
+/**
+ * Reader utility for combining multiple readers
+ *
+ * @deprecated This will be removed in 1.0.0. Use the {@link https://developer.mozilla.org/en-US/docs/Web/API/Streams_API | Web Streams API} instead.
+ */
+export class MultiReader implements Reader {
+  readonly #readers: Reader[];
+  #currentIndex = 0;
+
+  constructor(readers: Reader[]) {
+    this.#readers = [...readers];
+  }
+
+  async read(p: Uint8Array): Promise<number | null> {
+    const r = this.#readers[this.#currentIndex];
+    if (!r) return null;
+    const result = await r.read(p);
+    if (result === null) {
+      this.#currentIndex++;
+      return 0;
+    }
+    return result;
+  }
+}
+
+// denoCacheMetadata={"headers":{"cache-control":"public, max-age=31536000, immutable","content-length":"805","date":"Tue, 11 Feb 2025 02:14:41 GMT","vary":"Accept-Encoding, Origin","via":"http/2 edgeproxy-h","cross-origin-embedder-policy":"same-origin","referrer-policy":"strict-origin-when-cross-origin","content-security-policy":"default-src 'none'; style-src 'unsafe-inline'; sandbox","x-amz-cf-pop":"FRA56-P5","x-amz-version-id":"Smi3t_1aqXjb2h7ohRy4Lca6YJiJ9hFe","x-cache":"Hit from cloudfront","x-content-type-options":"nosniff","x-frame-options":"DENY","access-control-allow-origin":"*","accept-ranges":"bytes","age":"3230483","etag":"\"71305fb28d3377672b3f1f8995e9a918\"","cross-origin-opener-policy":"same-origin","x-amz-cf-id":"gLcNE1pfoY4I7V0rOLFF53u0QWYF4o8IUwA2I3f5SDKRU6XsGPUwUg==","x-amz-server-side-encryption":"AES256","strict-transport-security":"max-age=63072000; includeSubDomains; preload","server-timing":"fetchSource;dur=12","content-type":"application/typescript; charset=utf-8","last-modified":"Thu, 25 Apr 2024 03:01:09 GMT","server":"deno/gcp-europe-west3","cross-origin-resource-policy":"same-origin","x-amz-replication-status":"COMPLETED"},"url":"https://deno.land/std@0.224.0/io/multi_reader.ts","time":1742470563}

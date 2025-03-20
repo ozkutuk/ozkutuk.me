@@ -1,0 +1,52 @@
+// Copyright 2018-2024 the Deno authors. All rights reserved. MIT license.
+// This module is browser compatible.
+
+import { DEFAULT_BUFFER_SIZE } from "./_constants.ts";
+import type { Reader, Writer } from "./types.ts";
+
+/**
+ * Copies from `src` to `dst` until either EOF (`null`) is read from `src` or
+ * an error occurs. It resolves to the number of bytes copied or rejects with
+ * the first error encountered while copying.
+ *
+ * @example
+ * ```ts
+ * import { copy } from "https://deno.land/std@$STD_VERSION/io/copy.ts";
+ *
+ * const source = await Deno.open("my_file.txt");
+ * const bytesCopied1 = await copy(source, Deno.stdout);
+ * const destination = await Deno.create("my_file_2.txt");
+ * const bytesCopied2 = await copy(source, destination);
+ * ```
+ *
+ * @param src The source to copy from
+ * @param dst The destination to copy to
+ * @param options Can be used to tune size of the buffer. Default size is 32kB
+ */
+export async function copy(
+  src: Reader,
+  dst: Writer,
+  options?: {
+    bufSize?: number;
+  },
+): Promise<number> {
+  let n = 0;
+  const bufSize = options?.bufSize ?? DEFAULT_BUFFER_SIZE;
+  const b = new Uint8Array(bufSize);
+  let gotEOF = false;
+  while (gotEOF === false) {
+    const result = await src.read(b);
+    if (result === null) {
+      gotEOF = true;
+    } else {
+      let nwritten = 0;
+      while (nwritten < result) {
+        nwritten += await dst.write(b.subarray(nwritten, result));
+      }
+      n += nwritten;
+    }
+  }
+  return n;
+}
+
+// denoCacheMetadata={"headers":{"strict-transport-security":"max-age=63072000; includeSubDomains; preload","x-amz-cf-id":"x6oPjqioRIr4tJeFc1MN7J-8hdwHZna1grPyhChTBouR-1nYRSlDzA==","x-amz-server-side-encryption":"AES256","accept-ranges":"bytes","cross-origin-resource-policy":"same-origin","etag":"\"8b41b38745e5393d735f8e415292d497\"","referrer-policy":"strict-origin-when-cross-origin","vary":"Accept-Encoding, Origin","x-amz-replication-status":"COMPLETED","x-amz-version-id":"scFL_kP2P4EIQNZZTEJQsJzojKkvys9t","via":"http/2 edgeproxy-h","cache-control":"public, max-age=31536000, immutable","x-cache":"Hit from cloudfront","x-content-type-options":"nosniff","server-timing":"fetchSource;dur=20","x-amz-cf-pop":"FRA56-P5","x-frame-options":"DENY","content-security-policy":"default-src 'none'; style-src 'unsafe-inline'; sandbox","last-modified":"Thu, 25 Apr 2024 03:01:09 GMT","access-control-allow-origin":"*","age":"3230483","content-length":"1478","cross-origin-embedder-policy":"same-origin","date":"Tue, 11 Feb 2025 02:14:41 GMT","content-type":"application/typescript; charset=utf-8","cross-origin-opener-policy":"same-origin","server":"deno/gcp-europe-west3"},"url":"https://deno.land/std@0.224.0/io/copy.ts","time":1742470563}
