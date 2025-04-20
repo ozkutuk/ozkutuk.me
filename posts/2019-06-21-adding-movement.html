@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>ozkutuk's blog - Raiden, Part III: Adding Movement</title>
+
+    <link rel="icon" href="../favicon.png">
+    <link rel="stylesheet" type="text/css" href="../css/fonts.css">
+    <link rel="stylesheet" type="text/css" href="../css/default.css">
+    <link rel="stylesheet" type="text/css" href="../css/syntax.css">
+    <link rel="stylesheet" type="text/css" href="../css/katex.css">
+
+    
+      <meta property="og:type" content="article" /><meta property="og:url" content="https://ozkutuk.me/posts/2019-06-21-adding-movement.html" /><meta property="og:title" content="Raiden, Part III: Adding Movement" /><meta property="og:image" content="https://www.libravatar.org/avatar/cb5ae1412b8866d55b8a957468696797?s=200" />
+    
+</head>
+
+<body>
+    <div id="page-content">
+        <header>
+            <nav>
+                <div id="logo">
+                    <a href="../">ozkutuk's blog</a>
+                </div>
+                <a href="../about.html">about</a>
+            </nav>
+        </header>
+
+        <article>
+            <div class="info">
+    <h1>Raiden, Part III: Adding Movement</h1>
+
+    Posted on <time datetime="2019-06-21">June 21, 2019</time>
+    
+</div>
+
+
+
+<article>
+    <p>After a slight detour from our raytracer to research a bit about ray marching, we are back again. This time we will be adding transformations and instancing to Raiden. We will talk in a lot more detail in their dedicated chapters, but just to give a brief idea of what we are about to do for those who are unfamiliar with the terminology:</p>
+<p>Transformations are pretty self-explanatory. We will be applying certain operations to our objects to “transform” them. We will cover translation, scaling and rotation. It is important to note that we will be doing these in such a way that we will <em>not</em> be modifying the object geometry. We will be achieving the transformations with the help of our good ol’ matrices. The benefits of not manipulating the object geometry directly may not be too obvious for now, but it will be useful once we start implementing instancing.</p>
+<p>Instancing is method to save additional memory cost in the case where there exists duplicates of a single complex mesh in the scene. We call these duplicates, well… instances. I think it is safe to say that instancing is a space optimization. We will see how it works in its own section, but I think this explanation is enough for now to get going.</p>
+<h2 id="transformations">Transformations</h2>
+<p>If you were following closely, I mentioned that we will be making use of matrices to perform our transformations. But we don’t have any matrix implementation in our project yet. After thinking for a while, I thought implementing a reliable math library with full matrix and vector support was too much work and decided to integrate <a href="https://glm.g-truc.net/0.9.9/index.html">GLM</a> into the project. GLM provides all the math stuff with a very similar interface to GLSL. Since it is designed with use in graphics work in mind, it has the common functionality we will need. With the integration of GLM, it was the time to say goodbye to <code>tinymath</code>. It was a small library we rolled on our own but served us well until this time. Actually, I had used GLM in my other side graphics projects which involved OpenGL stuff. I was familiar with its architecture and it was a pleasant experience to use, therefore I designed <code>tinymath</code> with an interface very similar to GLM. This resulted in a very smooth migration phase, which was mostly converting <code>tmath::vec3f</code> to <code>glm::vec3</code> and it was good to go.</p>
+<p>Now that we have our math library at our disposal, we can start to actually implement the transformation stuff. We hopefully need not worry about matrix calculations, GLM takes care of it with its convenient functions. There are only a few points we need to be careful about.</p>
+<p>Let’s discuss how this all comes together. I mentioned that we will not be modifying the object geometry, so what are we going to do? We can represent all our transformations, that is rotation, scaling and translation, with a matrix. We call this matrix a transformation matrix. I will not go into too much detail regarding the math part, but we know that by the properties of matrices and a few clever tricks, we can combine these different kinds of transformations by multiplying their corresponding matrices, resulting in a single transformation matrix.</p>
+<p>The actual question is: how do we use this matrix? I think it is obvious that we can simply modify our objects’ <code>hit</code> routines to apply this transformation. Let’s consider meshes: we could multiply our transformation matrix with all the vertices of our mesh, inside the <code>hit</code> function. And it <em>would</em> work. But we can do better. Let’s think for a second. Rather than transforming our objects, we can <em>inverse</em> transform the ray, and their relative positions and orientations will be the same. The upside is it would be a lot, <em>a lot</em> faster.</p>
+<p>One thing we need to be careful about is the case of non-uniform scaling. We can scale our objects in a non-uniform fashion. For example, we can scale a sphere 2x its size, but only on x-axis. This would yield an ellipsoid. We do not have a <code>hit</code> routine for ellipsoids, but the god part is we don’t need it. We can use our usual sphere hit function, and transform the result. However, in order to get a correct result, we need to treat the surface normal vector differently. We basically need to multiply it with the inverse transpose of the transformation matrix, and it just works™.</p>
+<p>The actual part we need to think thoroughly, is about BVH. If we do not transform the bounding boxes of our objects along with them, we are no good. I know that it is a bit hard to visualize, I know it is for me. But bear with me. While we are constructing the BVH, we are in the <em>world space</em>. Therefore we need to create the bounding boxes of the BVH as if we transformed our objects. However, once we hit a bounding box of the BVH, we move the <em>local space</em> of our object, therefore we don’t transform an objects internal bounding box, we just inverse transform the ray. I hope that makes sense. It took me a lot of thinking to grasp the idea, and I am still not totally sure I got it right 😄.</p>
+<p>After we implement the corresponding parser stuff for our transformations, and put all these together, we can have the following outputs:</p>
+<figure>
+<img src="../assets/bunny_rotated.png" alt="Bunny, rotated on -axis" />
+<figcaption aria-hidden="true">Bunny, rotated on <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>y</mi></mrow><annotation encoding="application/x-tex">y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span></span></span></span>-axis</figcaption>
+</figure>
+<p>I rendered a few of the above with differing rotation angles to produce this animation:</p>
+<figure>
+<img src="../assets/bun.gif" alt="Bunny, animated" />
+<figcaption aria-hidden="true">Bunny, animated</figcaption>
+</figure>
+<p>I also rendered this scene of the so-called “killeroo”, however there seems to be problem with refractive surfaces under transformation. I have yet to solve the issue. However transformations are correct:</p>
+<p><img src="../assets/killeroo_glass.png" alt="Killeroo" /><br />
+</p>
+<h3 id="instancing">Instancing</h3>
+<p>In the intro paragraph I have talked a bit about what instancing is. As I said, instancing is a way to save memory for the cases where there exists multiples of the same mesh. What I mean by the same mesh is, only the same geometry. The instances will most probably have a different position, orientation and it may have different materials. These are all okay. After all, the costly part for us is the object geometry, memory-wise.</p>
+<p>The idea is simple and intuitive. For our instances, we do not create a whole new mesh in the memory. Instead we define a <code>MeshInstance</code> class, which holds a pointer to the base mesh, and also has its own transformation matrix and material. In the <code>hit</code> function of our <code>MeshInstance</code>, we just call the <code>hit</code> function of the base mesh. During this process, we apply the transformation of the instance ofcourse. The same principles apply as explained in previous section. Another thing we may or may not want to have is to apply the transformation on top of the base mesh’s own transformation matrix, or just have it applied without the base one. This is specified in the input scene files as a <code>resetTransform</code> field. Depending on its value, we combine the two matrices.</p>
+<p>This is all, really. To be honest I expected instancing would be a lot more work to implement. However, it was pretty easy compared to the transformation part. If you nail down the transformations and all the bounding box calculations together with it, implementing instancing will be a breeze.</p>
+<p>I don’t have many scenes to show instancing. I constructed this one, where our bunny has a companion from now on:</p>
+<p><img src="../assets/bunny_mult.png" alt="Bunnies" /><br />
+</p>
+<p>The original bunny was first translated right, and scaled down. Then the instance of it was translated left and rotated around <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>y</mi></mrow><annotation encoding="application/x-tex">y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.625em;vertical-align:-0.1944em;"></span><span class="mord mathnormal" style="margin-right:0.03588em;">y</span></span></span></span>-axis. The original transform matrix was also applied to the instance (hence it is also scaled down).</p>
+<p>This is it for this blog post. I hope it was informative. These topics are hard to grasp without a visual resource, it is hard to explain via text as well. The sad thing is I could not find a resource with an interactive demo or an animated video. If you happen to find one, I would like to take a look at it as well! As always, thanks for reading, and I wish you a great summer!</p>
+</article>
+
+        </article>
+        <footer>
+            <p id="cc-info">The content on this blog is licensed under
+              <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>
+            </p>
+            <p id="hakyll"> Site proudly generated by
+              <a href="http://jaspervdj.be/hakyll">Hakyll</a>
+            </p>
+        </footer>
+    </div>
+</body>
+
+</html>
